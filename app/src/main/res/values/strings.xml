@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="action_settings">Settings</string>
+    <string name="settings_activity_title">Settings</string>
+
+    <!-- Strings related to Settings -->
+    <string name="pref_sort_key">Sort_By</string>
+    <string name="pref_sort_title">Sort By</string>
+    <string name="pref_sort_default">Popularity</string>
+    <array name="pref_sort_labels">
+        <item name="pref_sort_popularity_label">Popularity</item>
+        <item name="pref_sort_rating_label">Rating</item>
+    </array>
+
+    <array name="pref_sort_values">
+        <item name="pref_sort_popularity_value">Popularity</item>
+        <item name="pref_sort_rating_label">Rating</item>
+    </array>
+</resources>
