@@ -2,6 +2,7 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -14,7 +15,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 /**
- * Created by mint on 1/30/16.
+ * Created by Aaron Helton on 1/30/2016
  */
 public class Movie implements Comparable<Movie>
 {
@@ -24,7 +25,7 @@ public class Movie implements Comparable<Movie>
     public static final String TMDB_URL_BASE = "http://api.themoviedb.org/3";
     public static final String TMDB_POSTER_URL = "http://image.tmdb.org/t/p/w500";
 
-    public static final Movie getMovie(Integer id, Context context, String API_KEY)
+    public static Movie getMovie(Integer id, Context context)
     {
         String url = TMDB_URL_BASE+"/movie/"+id +"?api_key="+API_KEY;
         String movieJSON = NetworkUtil.getURL(url);
@@ -47,18 +48,21 @@ public class Movie implements Comparable<Movie>
 
             Bitmap poster = null;
             try {
-                poster = Picasso.with(context).load(TMDB_POSTER_URL + posterPath).get();
+                poster = getPoster(context, posterPath);
             } catch (IOException ex) {
                 Log.e(LOG_TAG, "Unable To Get Movie Poster: " + ex.getMessage(), ex);
             }
 
-            Movie movie = new Movie(title, overview, poster,
-                                    releaseDate, runTime, vote, votes, genres);
-            return movie;
+            return new Movie(title, overview, poster, releaseDate, runTime, vote, votes, genres);
         } catch (JSONException ex) {
             Log.e(LOG_TAG, "ERROR PARSING MOVIE: " + ex.getMessage(), ex);
             return null;
         }
+    }
+
+    public static Bitmap getPoster(Context context, String posterPath) throws IOException
+    {
+        return Picasso.with(context).load(TMDB_POSTER_URL + posterPath).get();
     }
 
     private String title;
@@ -83,7 +87,8 @@ public class Movie implements Comparable<Movie>
         this.genres = genreList;
     }
 
-    public int compareTo(Movie other)
+    @Override
+    public int compareTo(@NonNull Movie other)
     {
         if(this.rating < other.rating) {
             return 1;

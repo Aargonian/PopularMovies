@@ -1,5 +1,7 @@
 package com.example.android.popularmovies;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,16 +11,34 @@ import android.widget.ImageView;
 import java.util.ArrayList;
 
 /**
- * Created by Aaron Helton on 1/30/16.
+ * Created by Aaron Helton on 1/30/2016
  */
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
 {
-    private ArrayList<Movie> dataset;
+    //Struct-like class for inner use
+    public static class MovieReference {
+        public final Integer id;
+        public final Bitmap poster;
+        public final String title;
+
+        public MovieReference(Integer id, Bitmap poster, String title) {
+            this.id = id;
+            this.poster = poster;
+            this.title = title;
+        }
+    }
+
+    private ArrayList<MovieReference> dataset;
     private MovieItemClickListener listener;
+    private Context context;
+
+    public MovieAdapter(Context context) {
+        this.context = context;
+    }
 
     public interface MovieItemClickListener
     {
-        void movieClicked(Movie movie);
+        void movieClicked(Integer movieID, String title);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder
@@ -33,7 +53,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
 
         @Override
         public void onClick(View v) {
-            listener.movieClicked(dataset.get(this.getLayoutPosition()));
+            MovieReference reference = dataset.get(this.getLayoutPosition());
+            listener.movieClicked(reference.id, reference.title);
         }
     }
 
@@ -46,7 +67,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     public MovieAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
         ImageView view = new ImageView(parent.getContext());
-        view.setAdjustViewBounds(true);
+        view.setAdjustViewBounds(false);
         view.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         view.setScaleType(ImageView.ScaleType.FIT_XY);
         return new ViewHolder(view);
@@ -55,15 +76,16 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     @Override
     public void onBindViewHolder(ViewHolder holder, int position)
     {
-        Movie movie = dataset.get(position);
-        if(movie != null)
-            dataset.get(position).applyPoster(holder.imageView);
+        MovieReference movie = dataset.get(position);
+        if(movie != null) {
+            holder.imageView.setImageBitmap(movie.poster);
+        }
     }
 
-    public void addMovie(Movie movie)
+    public void addMovie(MovieReference reference)
     {
-        dataset.add(movie);
-        notifyItemInserted(dataset.size()-1);
+        dataset.add(reference);
+        notifyItemInserted(dataset.size() - 1);
     }
 
     @Override

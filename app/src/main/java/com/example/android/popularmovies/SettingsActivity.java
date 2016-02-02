@@ -7,6 +7,9 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 
+/**
+ * Created by Aaron Helton on 2/1/2016
+ */
 public class SettingsActivity extends AppCompatActivity
 {
     @Override

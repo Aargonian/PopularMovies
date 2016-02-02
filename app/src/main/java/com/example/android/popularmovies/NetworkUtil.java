@@ -10,17 +10,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Created by mint on 1/30/16.
+ * Created by Aaron Helton on 1/30/2016
  */
 public final class NetworkUtil
 {
     private static final String LOG_TAG = NetworkUtil.class.getSimpleName();
 
-    public static final String getURL(String urlString)
+    public static String getURL(String urlString)
     {
         if(urlString == null || urlString.isEmpty())
             return null;
-        URL url = null;
+        URL url;
         HttpURLConnection connection = null;
         BufferedReader reader = null;
         StringBuilder builder = null;

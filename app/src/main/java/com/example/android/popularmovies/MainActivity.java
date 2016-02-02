@@ -6,23 +6,26 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+/**
+ * Created by Aaron Helton on 1/30/2016
+ */
 public class MainActivity extends AppCompatActivity
         implements DiscoverFragment.OnMovieSelectedListener
 {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private DetailFragment details;
 
-    DetailFragment details;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         if (savedInstanceState == null) {
-            getSupportActionBar().setElevation(8);
+            if(getSupportActionBar() != null)
+                getSupportActionBar().setElevation(8);
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction transaction = fm.beginTransaction();
             DiscoverFragment discoverFragment = new DiscoverFragment();
@@ -55,18 +58,29 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public void onMovieSelected(Movie movie)
+    public void onMovieSelected(Integer movieID, String title)
     {
-        Log.d(LOG_TAG, "Movie Selected: " + movie.getTitle());
-        if(details == null) {
+        if(findViewById(R.id.detail_container) != null && details == null)
+        {
             details = new DetailFragment();
+            FragmentManager fm = this.getSupportFragmentManager();
+            FragmentTransaction transaction =fm.beginTransaction();
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            transaction.add(R.id.detail_container, details);
+            transaction.addToBackStack("Replacement");
+            transaction.commit();
         }
-        details.receiveMovie(movie);
-        FragmentManager fm = this.getSupportFragmentManager();
-        FragmentTransaction transaction =fm.beginTransaction();
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        transaction.replace(R.id.container, details);
-        transaction.addToBackStack("Replacement");
-        transaction.commit();
+
+        if(findViewById(R.id.detail_container) != null)
+        {
+            details.setMovie(movieID);
+        }
+        else
+        {
+            Intent detailIntent = new Intent(this, DetailActivity.class);
+            detailIntent.putExtra("MOVIE_TITLE", title);
+            detailIntent.putExtra("MOVIE_ID", movieID);
+            this.startActivity(detailIntent);
+        }
     }
 }

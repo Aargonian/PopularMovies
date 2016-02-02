@@ -3,6 +3,7 @@ package com.example.android.popularmovies;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,15 +22,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link DiscoverFragment.OnMovieSelectedListener} interface
- * to handle interaction events.
+ * Created by Aaron Helton on 1/30/2016
  */
 public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItemClickListener
 {
@@ -88,9 +87,9 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     }
 
     @Override
-    public void movieClicked(Movie movie)
+    public void movieClicked(Integer id, String title)
     {
-        mListener.onMovieSelected(movie);
+        mListener.onMovieSelected(id, title);
     }
 
     @Override
@@ -111,10 +110,10 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     }
 
     public interface OnMovieSelectedListener {
-        void onMovieSelected(Movie movie);
+        void onMovieSelected(Integer id, String title);
     }
 
-    private class DiscoverTask extends AsyncTask<Void, Movie, Void>
+    private class DiscoverTask extends AsyncTask<Void, MovieAdapter.MovieReference, Void>
     {
         private final String LOG_TAG = DiscoverTask.class.getSimpleName();
 
@@ -122,7 +121,7 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         public Void doInBackground(Void... params)
         {
             String TMDB_DISCOVER_URL = Movie.TMDB_URL_BASE+"/discover/movie?";
-
+            Context context = DiscoverFragment.this.getActivity();
             SharedPreferences prefs =
                     PreferenceManager
                             .getDefaultSharedPreferences(DiscoverFragment.this.getActivity());
@@ -140,8 +139,15 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
                 JSONArray results = movieList.getJSONArray("results");
                 for(int i = 0; i < results.length(); i++) {
                     Integer id = results.getJSONObject(i).getInt("id");
-                    publishProgress(Movie.getMovie(id, DiscoverFragment.this.getActivity(),
-                            Movie.API_KEY));
+                    String title = results.getJSONObject(i).getString("original_title");
+                    Bitmap poster = null;
+                    try {
+                        poster = Movie.getPoster(context,
+                                        results.getJSONObject(i).getString("poster_path"));
+                    } catch (IOException ex) {
+                        Log.e(LOG_TAG, "Unable to retrive poster! " + ex.getMessage(), ex);
+                    }
+                    publishProgress(new MovieAdapter.MovieReference(id, poster, title));
                 }
             } catch (MalformedURLException ex) {
                 Log.e(LOG_TAG, "Malformed URL: " + ex.getMessage(), ex);
@@ -152,7 +158,7 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         }
 
         @Override
-        public void onProgressUpdate(Movie... progress)
+        public void onProgressUpdate(MovieAdapter.MovieReference... progress)
         {
             DiscoverFragment.this.mAdapter.addMovie(progress[0]);
         }
