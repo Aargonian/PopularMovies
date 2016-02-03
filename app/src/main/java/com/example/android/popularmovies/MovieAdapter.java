@@ -94,4 +94,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     public int getItemCount() {
         return dataset.size();
     }
+
+    public final void emptyDataset() {
+        int prevSize = dataset.size();
+        dataset.clear();
+        notifyItemRangeRemoved(0, prevSize);
+    }
 }

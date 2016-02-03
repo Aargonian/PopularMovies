@@ -41,6 +41,7 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     private GridLayoutManager mManager;
     private MovieAdapter mAdapter;
     private FrameLayout movieContainer;
+    private String prevSort;
     private boolean loadingMovies;
     private int currentPage;
 
@@ -54,35 +55,6 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         mAdapter = new MovieAdapter();
         mAdapter.setMovieItemClickedListener(this);
         currentPage = 1;
-    }
-
-    public void onStart()
-    {
-        super.onStart();
-        Log.e(LOG_TAG, "On Start Called!");
-    }
-
-    public void onResume()
-    {
-        super.onResume();
-        Log.e(LOG_TAG, "ON RESUME CALLED");
-    }
-
-    public void onPause()
-    {
-        super.onPause();
-        Log.e(LOG_TAG, "ON PAUSE CALLED");
-    }
-
-    public void onStop()
-    {
-        super.onStop(); Log.e(LOG_TAG, "ON STOP CALLED");
-    }
-
-    public void onDestroy()
-    {
-        super.onDestroy();
-        Log.e(LOG_TAG, "ON DESTROY CALLED!");
     }
 
     public void onSaveInstanceState(Bundle bundle)
@@ -115,22 +87,19 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
                 }
             }
         };
-        mMoviesGridView.addOnScrollListener(new RecyclerView.OnScrollListener()
-        {
+        mMoviesGridView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy)
-            {
-                if(currentPage < 11) //check for scroll down
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (currentPage < 11) //check for scroll down
                 {
                     int visibleItemCount = recyclerView.getLayoutManager().getChildCount();
                     int totalItemCount = recyclerView.getLayoutManager().getItemCount();
                     int pastVisiblesItems =
-                            ((GridLayoutManager)recyclerView.getLayoutManager())
+                            ((GridLayoutManager) recyclerView.getLayoutManager())
                                     .findFirstVisibleItemPosition();
 
-                    if (!loadingMovies)
-                    {
-                        if ( (visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                    if (!loadingMovies) {
+                        if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
                             addMovies();
                         }
                     }
@@ -151,6 +120,20 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         if(savedInstanceState != null)
             mMoviesGridView.setVerticalScrollbarPosition(savedInstanceState.getInt("SCROLL_POS"));
         return root;
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
+        if(!prefs.getString(getString(R.string.pref_sort_key), getString(R.string.pref_sort_default))
+                .equalsIgnoreCase(prevSort))
+        {
+            mAdapter.emptyDataset();
+            currentPage=1;
+            addMovies();
+        }
     }
 
     @Override
@@ -211,6 +194,7 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
                     PreferenceManager
                             .getDefaultSharedPreferences(DiscoverFragment.this.getActivity());
             String SORT = prefs.getString(getString(R.string.pref_sort_key), getString(R.string.pref_sort_default));
+            prevSort = SORT;
             if(SORT.equalsIgnoreCase(getString(R.string.pref_sort_popularity_value)))
                 SORT = "popularity.desc";
             else if (SORT.equalsIgnoreCase(getString(R.string.pref_sort_rating_value)))
