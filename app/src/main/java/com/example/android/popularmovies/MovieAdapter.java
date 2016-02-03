@@ -28,17 +28,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
         }
     }
 
+    public interface MovieItemClickListener
+    {
+        void movieClicked(Integer movieID, String title);
+    }
+
     private ArrayList<MovieReference> dataset;
     private MovieItemClickListener listener;
     private Context context;
 
-    public MovieAdapter(Context context) {
-        this.context = context;
-    }
-
-    public interface MovieItemClickListener
-    {
-        void movieClicked(Integer movieID, String title);
+    public MovieAdapter() {
+        dataset = new ArrayList<>();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder
@@ -53,21 +53,23 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
 
         @Override
         public void onClick(View v) {
-            MovieReference reference = dataset.get(this.getLayoutPosition());
-            listener.movieClicked(reference.id, reference.title);
+            if(listener != null) {
+                MovieReference reference = dataset.get(this.getLayoutPosition());
+                listener.movieClicked(reference.id, reference.title);
+            }
         }
     }
 
-    public MovieAdapter(MovieItemClickListener listener) {
-        dataset = new ArrayList<>();
-        this.listener = listener;
+    public void setMovieItemClickedListener(MovieItemClickListener list)
+    {
+        this.listener = list;
     }
 
     @Override
     public MovieAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
         ImageView view = new ImageView(parent.getContext());
-        view.setAdjustViewBounds(false);
+        view.setAdjustViewBounds(true);
         view.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         view.setScaleType(ImageView.ScaleType.FIT_XY);
         return new ViewHolder(view);

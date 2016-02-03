@@ -9,4 +9,8 @@
     <color name="secondaryText">#727272</color>
     <color name="dividerColor">#B6B6B6</color>
     <color name="white">#FFFFFF</color>
+    <color name="red">@color/colorPrimary</color>
+    <color name="green">@color/colorAccent</color>
+    <color name="blue">#4444FF</color>
+    <color name="yellow">#FFFF44</color>
 </resources>

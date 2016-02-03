@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -38,6 +40,9 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     private RecyclerView mMoviesGridView;
     private GridLayoutManager mManager;
     private MovieAdapter mAdapter;
+    private FrameLayout movieContainer;
+    private boolean loadingMovies;
+    private int currentPage;
 
     public DiscoverFragment() {}
 
@@ -45,18 +50,55 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        mAdapter = new MovieAdapter(this);
-        DiscoverTask task = new DiscoverTask();
-        task.execute();
+        Log.e(LOG_TAG, "onCreate Called!");
+        mAdapter = new MovieAdapter();
+        mAdapter.setMovieItemClickedListener(this);
+        currentPage = 1;
     }
 
+    public void onStart()
+    {
+        super.onStart();
+        Log.e(LOG_TAG, "On Start Called!");
+    }
+
+    public void onResume()
+    {
+        super.onResume();
+        Log.e(LOG_TAG, "ON RESUME CALLED");
+    }
+
+    public void onPause()
+    {
+        super.onPause();
+        Log.e(LOG_TAG, "ON PAUSE CALLED");
+    }
+
+    public void onStop()
+    {
+        super.onStop(); Log.e(LOG_TAG, "ON STOP CALLED");
+    }
+
+    public void onDestroy()
+    {
+        super.onDestroy();
+        Log.e(LOG_TAG, "ON DESTROY CALLED!");
+    }
+
+    public void onSaveInstanceState(Bundle bundle)
+    {
+        super.onSaveInstanceState(bundle);
+        int scrollPosition =
+                ((GridLayoutManager)mMoviesGridView.getLayoutManager())
+                        .findFirstVisibleItemPosition();
+        bundle.putInt("SCROLL_POS", scrollPosition);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_discover, container, false);
-        FrameLayout movieContainer = (FrameLayout)root.findViewById(R.id.movieContainer);
-
+        movieContainer = (FrameLayout)root.findViewById(R.id.movieContainer);
         //Create Recyclerview Programmatically so that we can get an auto-fit-like functionality
         mMoviesGridView = new RecyclerView(this.getContext()) {
             @Override
@@ -73,6 +115,28 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
                 }
             }
         };
+        mMoviesGridView.addOnScrollListener(new RecyclerView.OnScrollListener()
+        {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy)
+            {
+                if(currentPage < 11) //check for scroll down
+                {
+                    int visibleItemCount = recyclerView.getLayoutManager().getChildCount();
+                    int totalItemCount = recyclerView.getLayoutManager().getItemCount();
+                    int pastVisiblesItems =
+                            ((GridLayoutManager)recyclerView.getLayoutManager())
+                                    .findFirstVisibleItemPosition();
+
+                    if (!loadingMovies)
+                    {
+                        if ( (visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                            addMovies();
+                        }
+                    }
+                }
+            }
+        });
         mMoviesGridView.setLayoutParams(new RecyclerView.LayoutParams(
                 RecyclerView.LayoutParams.MATCH_PARENT,
                 RecyclerView.LayoutParams.MATCH_PARENT));
@@ -83,6 +147,9 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         mMoviesGridView.setLayoutManager(mManager);
         mMoviesGridView.setAdapter(mAdapter);
         movieContainer.addView(mMoviesGridView);
+        addMovies();
+        if(savedInstanceState != null)
+            mMoviesGridView.setVerticalScrollbarPosition(savedInstanceState.getInt("SCROLL_POS"));
         return root;
     }
 
@@ -90,6 +157,21 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     public void movieClicked(Integer id, String title)
     {
         mListener.onMovieSelected(id, title);
+    }
+
+    public void addMovies() {
+        if(currentPage < 11)
+        {
+            loadingMovies = true;
+            DiscoverTask task = new DiscoverTask() {
+                @Override
+                public void onPostExecute(Void result) {
+                    loadingMovies = false;
+                }
+            };
+            task.execute(currentPage++);
+        }
+
     }
 
     @Override
@@ -113,27 +195,37 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         void onMovieSelected(Integer id, String title);
     }
 
-    private class DiscoverTask extends AsyncTask<Void, MovieAdapter.MovieReference, Void>
+    private class DiscoverTask extends AsyncTask<Integer, MovieAdapter.MovieReference, Void>
     {
         private final String LOG_TAG = DiscoverTask.class.getSimpleName();
 
         @Override
-        public Void doInBackground(Void... params)
+        public Void doInBackground(Integer... params)
         {
+            int page = 1;
+            if(params.length > 0)
+                page = params[0];
             String TMDB_DISCOVER_URL = Movie.TMDB_URL_BASE+"/discover/movie?";
             Context context = DiscoverFragment.this.getActivity();
             SharedPreferences prefs =
                     PreferenceManager
                             .getDefaultSharedPreferences(DiscoverFragment.this.getActivity());
             String SORT = prefs.getString(getString(R.string.pref_sort_key), getString(R.string.pref_sort_default));
-            if(SORT.equalsIgnoreCase(getResources().getStringArray(R.array.pref_sort_values)[0]))
+            if(SORT.equalsIgnoreCase(getString(R.string.pref_sort_popularity_value)))
                 SORT = "popularity.desc";
-            else
+            else if (SORT.equalsIgnoreCase(getString(R.string.pref_sort_rating_value)))
                 SORT = "vote_average.desc";
+            else
+                SORT = "release_date.desc";
             try {
-                Uri uri = Uri.parse(TMDB_DISCOVER_URL).buildUpon()
+                Uri.Builder builder = Uri.parse(TMDB_DISCOVER_URL).buildUpon()
                         .appendQueryParameter("sort_by", SORT)
-                        .appendQueryParameter("api_key", Movie.API_KEY).build();
+                        .appendQueryParameter("api_key", Movie.API_KEY)
+                        .appendQueryParameter("page", Integer.toString(page));
+                //Hack to avoid strange results in release date or vote average sorts
+                if(SORT.equals("release_date.desc") || SORT.equals("vote_average.desc"))
+                    builder.appendQueryParameter("vote_count.gte", "250");
+                Uri uri = builder.build();
                 String moviesJSON = NetworkUtil.getURL(new URL(uri.toString()).toString());
                 JSONObject movieList = new JSONObject(moviesJSON);
                 JSONArray results = movieList.getJSONArray("results");
@@ -145,7 +237,28 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
                         poster = Movie.getPoster(context,
                                         results.getJSONObject(i).getString("poster_path"));
                     } catch (IOException ex) {
-                        Log.e(LOG_TAG, "Unable to retrive poster! " + ex.getMessage(), ex);
+                        Log.e(LOG_TAG, "Unable to retrieve poster! " + ex.getMessage(), ex);
+                    }
+
+                    //Retrieve default no image bitmap if no image exists for the movie
+                    if(poster == null) {
+                        InputStream stream = null;
+                        try {
+                            // get input stream
+                            stream = getResources().getAssets().open("noimage.png");
+                            poster = BitmapFactory.decodeStream(stream);
+                        } catch(IOException ex) {
+                            Log.e(LOG_TAG, "UNABLE TO DECODE DEFAULT IMAGE: "+ex.getMessage(), ex);
+                            poster = null;
+                        } finally {
+                            if(stream != null) {
+                                try {
+                                    stream.close();
+                                } catch (IOException e) {
+                                    Log.e(LOG_TAG, "Unable to close stream: " + e.getMessage(), e);
+                                }
+                            }
+                        }
                     }
                     publishProgress(new MovieAdapter.MovieReference(id, poster, title));
                 }

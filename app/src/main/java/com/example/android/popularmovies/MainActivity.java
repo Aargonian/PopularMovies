@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity
             Intent detailIntent = new Intent(this, DetailActivity.class);
             detailIntent.putExtra("MOVIE_TITLE", title);
             detailIntent.putExtra("MOVIE_ID", movieID);
+            detailIntent.putExtra("DISPLAY_TITLE", true);
             this.startActivity(detailIntent);
         }
     }

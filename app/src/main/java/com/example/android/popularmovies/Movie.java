@@ -2,10 +2,12 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -23,7 +25,7 @@ public class Movie implements Comparable<Movie>
     public static final String API_KEY = BuildConfig.TMDBKey;
     //public static final String API_KEY = "6de0f0590c832161c5da34a0b67f23d5";
     public static final String TMDB_URL_BASE = "http://api.themoviedb.org/3";
-    public static final String TMDB_POSTER_URL = "http://image.tmdb.org/t/p/w500";
+    public static final String TMDB_POSTER_URL = "http://image.tmdb.org/t/p/w185";
 
     public static Movie getMovie(Integer id, Context context)
     {
@@ -42,9 +44,20 @@ public class Movie implements Comparable<Movie>
             String overview = movieObject.getString("overview");
             String posterPath = movieObject.getString("poster_path");
             String releaseDate = movieObject.getString("release_date");
-            int runTime = movieObject.getInt("runtime");
-            double vote = movieObject.getDouble("vote_average");
-            int votes = movieObject.getInt("vote_count");
+
+            //Individual Tries for Malformed Movies
+            int runTime = 0;
+            int votes = 0;
+            double vote = 0;
+            try {
+                runTime = movieObject.getInt("runtime");
+            } catch (JSONException ex) { Log.e(LOG_TAG, "BROKEN JSON: " + ex.getMessage(), ex); }
+            try {
+                votes = movieObject.getInt("vote_count");
+            } catch (JSONException ex) { Log.e(LOG_TAG, "BROKEN JSON: " + ex.getMessage(), ex); }
+            try {
+                vote = movieObject.getDouble("vote_average");
+            } catch (JSONException ex) { Log.e(LOG_TAG, "BROKEN JSON: " + ex.getMessage(), ex); }
 
             Bitmap poster = null;
             try {
@@ -56,13 +69,18 @@ public class Movie implements Comparable<Movie>
             return new Movie(title, overview, poster, releaseDate, runTime, vote, votes, genres);
         } catch (JSONException ex) {
             Log.e(LOG_TAG, "ERROR PARSING MOVIE: " + ex.getMessage(), ex);
+            Log.e(LOG_TAG, "JSON TEXT:\n"+movieJSON);
             return null;
         }
     }
 
     public static Bitmap getPoster(Context context, String posterPath) throws IOException
     {
-        return Picasso.with(context).load(TMDB_POSTER_URL + posterPath).get();
+        try {
+            return Picasso.with(context).load(TMDB_POSTER_URL + posterPath).get();
+        } catch(Downloader.ResponseException ex) {
+            return BitmapFactory.decodeResource(context.getResources(), R.mipmap.noimage);
+        }
     }
 
     private String title;
