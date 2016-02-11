@@ -7,9 +7,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.squareup.picasso.Downloader;
-import com.squareup.picasso.Picasso;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,13 +71,11 @@ public class Movie implements Comparable<Movie>
         }
     }
 
+    //TODO: Implementation tied explicitly to Picasso. Check out other libraries!
     public static Bitmap getPoster(Context context, String posterPath) throws IOException
     {
-        try {
-            return Picasso.with(context).load(TMDB_POSTER_URL + posterPath).get();
-        } catch(Downloader.ResponseException ex) {
-            return BitmapFactory.decodeResource(context.getResources(), R.mipmap.noimage);
-        }
+        return NetworkUtil.getImage(TMDB_POSTER_URL + posterPath, context,
+                BitmapFactory.decodeResource(context.getResources(), R.mipmap.noimage));
     }
 
     private String title;

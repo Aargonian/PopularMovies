@@ -12,6 +12,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * Created by Aaron Helton on 1/31/2016
  */
@@ -20,11 +23,11 @@ public class DetailFragment extends Fragment
     public DetailFragment() {}
 
     private Movie movie;
-    private TextView rating;
-    private TextView release;
-    private TextView overview;
-    private TextView title;
-    private ImageView poster;
+    @Bind(R.id.rating) TextView rating;
+    @Bind(R.id.releaseDate) TextView release;
+    @Bind(R.id.overview) TextView overview;
+    @Bind(R.id.titleView) TextView title;
+    @Bind(R.id.posterImage) ImageView poster;
     private boolean viewCreated;
     private boolean displayTitle = false;
 
@@ -65,14 +68,9 @@ public class DetailFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_detail, container, false);
-        rating = (TextView) root.findViewById(R.id.rating);
-        overview = (TextView) root.findViewById(R.id.overview);
-        release = (TextView) root.findViewById(R.id.releaseDate);
-        poster = (ImageView) root.findViewById(R.id.posterImage);
-        title = (TextView)root.findViewById(R.id.titleView);
+        ButterKnife.bind(this, root);
         if(!displayTitle)
             title.setVisibility(View.GONE);
-
         viewCreated = true;
         if(movie != null) {
             setMovieInfo(movie);

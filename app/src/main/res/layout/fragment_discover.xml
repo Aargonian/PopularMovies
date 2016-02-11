@@ -1,9 +1,30 @@
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/movieContainer"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/black"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.android.popularmovies.DiscoverFragment"/>
+    tools:context="com.example.android.popularmovies.DiscoverFragment">
+    <FrameLayout
+        android:id="@+id/movieContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"/>
+    <com.zl.reik.dilatingdotsprogressbar.DilatingDotsProgressBar
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:radius="5dp"
+        android:elevation="8dp"
+        android:color="@color/white"
+        app:dd_numDots="10"
+        app:dd_scaleMultiplier="2"
+        app:dd_animationDuration="250"
+        app:dd_horizontalSpacing="10dp"
+        />
+
+</RelativeLayout>
 

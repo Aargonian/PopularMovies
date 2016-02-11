@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,14 +18,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.zl.reik.dilatingdotsprogressbar.DilatingDotsProgressBar;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 
 /**
@@ -34,16 +37,19 @@ import java.net.URL;
  */
 public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItemClickListener
 {
+    //Neglecting use of ButterKnife for this fragment, only one findViewById() is used.
     private static final String LOG_TAG = DiscoverFragment.class.getSimpleName();
     private static final Integer PREFERRED_COLUMN_WIDTH = 100;
     private OnMovieSelectedListener mListener;
     private RecyclerView mMoviesGridView;
     private GridLayoutManager mManager;
     private MovieAdapter mAdapter;
-    private FrameLayout movieContainer;
     private String prevSort;
     private boolean loadingMovies;
     private int currentPage;
+
+    @Bind(R.id.movieContainer) FrameLayout movieContainer;
+    @Bind(R.id.progress) DilatingDotsProgressBar dotProgress;
 
     public DiscoverFragment() {}
 
@@ -70,7 +76,7 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_discover, container, false);
-        movieContainer = (FrameLayout)root.findViewById(R.id.movieContainer);
+        ButterKnife.bind(this, root);
         //Create Recyclerview Programmatically so that we can get an auto-fit-like functionality
         mMoviesGridView = new RecyclerView(this.getContext()) {
             @Override
@@ -116,6 +122,7 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         mMoviesGridView.setLayoutManager(mManager);
         mMoviesGridView.setAdapter(mAdapter);
         movieContainer.addView(mMoviesGridView);
+        dotProgress.hideNow();
         addMovies();
         if(savedInstanceState != null)
             mMoviesGridView.setVerticalScrollbarPosition(savedInstanceState.getInt("SCROLL_POS"));
@@ -145,11 +152,14 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     public void addMovies() {
         if(currentPage < 11)
         {
+            dotProgress.showNow();
             loadingMovies = true;
             DiscoverTask task = new DiscoverTask() {
                 @Override
                 public void onPostExecute(Void result) {
                     loadingMovies = false;
+                    dotProgress.hideNow();
+                    dotProgress.reset();
                 }
             };
             task.execute(currentPage++);
@@ -211,9 +221,19 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
                     builder.appendQueryParameter("vote_count.gte", "250");
                 Uri uri = builder.build();
                 String moviesJSON = NetworkUtil.getURL(new URL(uri.toString()).toString());
-                JSONObject movieList = new JSONObject(moviesJSON);
+                JSONObject movieList;
+                if(moviesJSON != null)
+                    movieList = new JSONObject(moviesJSON);
+                else
+                    return null;
                 JSONArray results = movieList.getJSONArray("results");
-                for(int i = 0; i < results.length(); i++) {
+
+                //We need to get the posters. First thing, determine the number of processors avail
+                //We can use that to determine an upper limit to parallel threads.
+                int currentThreadCount = 0;
+                int processors = Runtime.getRuntime().availableProcessors();
+                for(int i = 0; i < results.length(); i++)
+                {
                     Integer id = results.getJSONObject(i).getInt("id");
                     String title = results.getJSONObject(i).getString("original_title");
                     Bitmap poster = null;
@@ -222,27 +242,6 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
                                         results.getJSONObject(i).getString("poster_path"));
                     } catch (IOException ex) {
                         Log.e(LOG_TAG, "Unable to retrieve poster! " + ex.getMessage(), ex);
-                    }
-
-                    //Retrieve default no image bitmap if no image exists for the movie
-                    if(poster == null) {
-                        InputStream stream = null;
-                        try {
-                            // get input stream
-                            stream = getResources().getAssets().open("noimage.png");
-                            poster = BitmapFactory.decodeStream(stream);
-                        } catch(IOException ex) {
-                            Log.e(LOG_TAG, "UNABLE TO DECODE DEFAULT IMAGE: "+ex.getMessage(), ex);
-                            poster = null;
-                        } finally {
-                            if(stream != null) {
-                                try {
-                                    stream.close();
-                                } catch (IOException e) {
-                                    Log.e(LOG_TAG, "Unable to close stream: " + e.getMessage(), e);
-                                }
-                            }
-                        }
                     }
                     publishProgress(new MovieAdapter.MovieReference(id, poster, title));
                 }

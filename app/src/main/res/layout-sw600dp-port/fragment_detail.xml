@@ -78,6 +78,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
+                android:layout_marginLeft="0dp"
                 android:layout_toRightOf="@id/posterImage"
                 android:layout_toEndOf="@id/posterImage"
                 android:layout_below="@id/ratingHeader"

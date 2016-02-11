@@ -93,6 +93,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/divider"
                 android:layout_margin="10dp"
+                android:layout_marginLeft="0dp"
                 android:padding="10dp"
                 android:elevation="4dp"
                 android:background="@color/colorPrimary"
