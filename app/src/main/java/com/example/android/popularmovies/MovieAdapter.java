@@ -2,11 +2,16 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
+
+import com.nytegear.android.view.AsyncImage;
+import com.nytegear.android.view.WebImageView;
 
 import java.util.ArrayList;
 
@@ -18,10 +23,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     //Struct-like class for inner use
     public static class MovieReference {
         public final Integer id;
-        public final Bitmap poster;
         public final String title;
+        public final AsyncImage poster;
 
-        public MovieReference(Integer id, Bitmap poster, String title) {
+        public MovieReference(Integer id, String title, AsyncImage poster) {
             this.id = id;
             this.poster = poster;
             this.title = title;
@@ -42,13 +47,28 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener {
+            implements View.OnClickListener, AsyncImage.AsyncImageListener {
+        private String LOG_TAG = ViewHolder.class.getName();
         public ImageView imageView;
         public ViewHolder(ImageView v)
         {
             super(v);
             imageView = v;
             imageView.setOnClickListener(this);
+        }
+
+        @Override
+        public void imageDownloaded(Bitmap bm)
+        {
+            Log.e(LOG_TAG, "IMAGE DOWNLOADED WOOT");
+            imageView.setImageBitmap(bm);
+        }
+
+        @Override
+        public void downloadFailed()
+        {
+            imageView.setImageBitmap(
+                    BitmapFactory.decodeResource(context.getResources(), R.drawable.noimage));
         }
 
         @Override
@@ -68,9 +88,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     @Override
     public MovieAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
-        ImageView view = new ImageView(parent.getContext());
+        WebImageView view = new WebImageView(parent.getContext());
         view.setAdjustViewBounds(true);
-        view.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        view.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
         view.setScaleType(ImageView.ScaleType.FIT_XY);
         return new ViewHolder(view);
     }
@@ -80,7 +100,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     {
         MovieReference movie = dataset.get(position);
         if(movie != null) {
-            holder.imageView.setImageBitmap(movie.poster);
+            movie.poster.setAsyncImageListener(holder);
+            holder.imageView.setImageBitmap(movie.poster.getImage());
         }
     }
 

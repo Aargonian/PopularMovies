@@ -7,6 +7,8 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.nytegear.android.network.NetworkUtil;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,8 +76,10 @@ public class Movie implements Comparable<Movie>
     //TODO: Implementation tied explicitly to Picasso. Check out other libraries!
     public static Bitmap getPoster(Context context, String posterPath) throws IOException
     {
+        if(context == null || posterPath == null || posterPath.isEmpty())
+            return null;
         return NetworkUtil.getImage(TMDB_POSTER_URL + posterPath, context,
-                BitmapFactory.decodeResource(context.getResources(), R.mipmap.noimage));
+                BitmapFactory.decodeResource(context.getResources(), R.drawable.loading));
     }
 
     private String title;

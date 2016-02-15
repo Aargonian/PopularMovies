@@ -3,7 +3,7 @@ package com.example.android.popularmovies;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,13 +18,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.zl.reik.dilatingdotsprogressbar.DilatingDotsProgressBar;
+import com.nytegear.android.network.NetworkUtil;
+import com.nytegear.android.view.AsyncImage;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -49,7 +49,6 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     private int currentPage;
 
     @Bind(R.id.movieContainer) FrameLayout movieContainer;
-    @Bind(R.id.progress) DilatingDotsProgressBar dotProgress;
 
     public DiscoverFragment() {}
 
@@ -122,7 +121,6 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         mMoviesGridView.setLayoutManager(mManager);
         mMoviesGridView.setAdapter(mAdapter);
         movieContainer.addView(mMoviesGridView);
-        dotProgress.hideNow();
         addMovies();
         if(savedInstanceState != null)
             mMoviesGridView.setVerticalScrollbarPosition(savedInstanceState.getInt("SCROLL_POS"));
@@ -152,14 +150,11 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     public void addMovies() {
         if(currentPage < 11)
         {
-            dotProgress.showNow();
             loadingMovies = true;
             DiscoverTask task = new DiscoverTask() {
                 @Override
                 public void onPostExecute(Void result) {
                     loadingMovies = false;
-                    dotProgress.hideNow();
-                    dotProgress.reset();
                 }
             };
             task.execute(currentPage++);
@@ -227,23 +222,17 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
                 else
                     return null;
                 JSONArray results = movieList.getJSONArray("results");
-
-                //We need to get the posters. First thing, determine the number of processors avail
-                //We can use that to determine an upper limit to parallel threads.
-                int currentThreadCount = 0;
-                int processors = Runtime.getRuntime().availableProcessors();
                 for(int i = 0; i < results.length(); i++)
                 {
                     Integer id = results.getJSONObject(i).getInt("id");
                     String title = results.getJSONObject(i).getString("original_title");
-                    Bitmap poster = null;
-                    try {
-                        poster = Movie.getPoster(context,
-                                        results.getJSONObject(i).getString("poster_path"));
-                    } catch (IOException ex) {
-                        Log.e(LOG_TAG, "Unable to retrieve poster! " + ex.getMessage(), ex);
-                    }
-                    publishProgress(new MovieAdapter.MovieReference(id, poster, title));
+                    String posterURL = Movie.TMDB_POSTER_URL+
+                            results.getJSONObject(i).getString("poster_path");
+                    AsyncImage image = new AsyncImage(context,
+                            BitmapFactory.decodeResource(context.getResources(),
+                                    R.drawable.loading));
+                    image.setImageURL(posterURL);
+                    publishProgress(new MovieAdapter.MovieReference(id, title, image));
                 }
             } catch (MalformedURLException ex) {
                 Log.e(LOG_TAG, "Malformed URL: " + ex.getMessage(), ex);

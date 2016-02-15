@@ -78,7 +78,7 @@ public class DetailFragment extends Fragment
             movie = new Movie(
                     "Pick a Movie!",
                     "You can browse movies in the list and touch one to see its details here!",
-                    BitmapFactory.decodeResource(this.getResources(), R.mipmap.noimage),
+                    BitmapFactory.decodeResource(this.getResources(), R.drawable.noimage),
                     "",
                     0,
                     10.0,

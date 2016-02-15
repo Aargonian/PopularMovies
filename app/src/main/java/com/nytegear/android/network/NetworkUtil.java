@@ -1,8 +1,7 @@
-package com.example.android.popularmovies;
+package com.nytegear.android.network;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.squareup.picasso.Downloader;
@@ -16,6 +15,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 /**
  * Created by Aaron Helton on 1/30/2016
  */
@@ -27,7 +30,7 @@ public final class NetworkUtil
 
     public static String getURL(String urlString) {
         long nano = System.nanoTime();
-        String res = getUrlImpl(urlString);
+        String res = getUrlImpl2(urlString);
 
         //Statistics
         long time = (System.nanoTime()-nano)/1000000;
@@ -54,7 +57,7 @@ public final class NetworkUtil
         //Tests on target device show that the straight HTTPUrlConnection version actually performs
         //faster on average than Picasso, and images being stored as an ImageView later means we
         //don't quite benefit as much from the image cache to make it worth using.
-        Bitmap bm = defImageImpl2(url, context, defImg);
+        Bitmap bm = defImageImpl(url, context, defImg);
 
         long time = (System.nanoTime()-nano)/1000000;
         imgRequestTimes.add(time);
@@ -81,21 +84,6 @@ public final class NetworkUtil
         } catch(Downloader.ResponseException ex) {
             return defImg;
         } catch (IOException ex) {
-            return defImg;
-        }
-    }
-
-    private static Bitmap defImageImpl2(String urlString, Context context, Bitmap defImg)
-    {
-        try {
-            URL url = new URL(urlString);
-            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-            return BitmapFactory.decodeStream(connection.getInputStream());
-        } catch (MalformedURLException ex) {
-            Log.e(LOG_TAG, "Malformed URL: " + urlString + ";\n" + ex.getMessage(), ex);
-            return defImg;
-        } catch (IOException ex) {
-            Log.e(LOG_TAG, "I/O ERROR: " + ex.getMessage(), ex);
             return defImg;
         }
     }
@@ -147,5 +135,21 @@ public final class NetworkUtil
             return builder.toString();
         else
             return null;
+    }
+
+    private static String getUrlImpl2(String urlString)
+    {
+        try {
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url(new URL(urlString))
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        } catch (IOException ex) {
+            Log.e(LOG_TAG, "Error Getting Page: " + ex.getMessage(), ex);
+            return null;
+        }
     }
 }
