@@ -58,7 +58,8 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public void onMovieSelected(Integer movieID, String title)
+    @Override
+    public void onMovieSelected(Long movieID)
     {
         if(findViewById(R.id.detail_container) != null && details == null)
         {
@@ -78,7 +79,6 @@ public class MainActivity extends AppCompatActivity
         else
         {
             Intent detailIntent = new Intent(this, DetailActivity.class);
-            detailIntent.putExtra("MOVIE_TITLE", title);
             detailIntent.putExtra("MOVIE_ID", movieID);
             detailIntent.putExtra("DISPLAY_TITLE", true);
             this.startActivity(detailIntent);

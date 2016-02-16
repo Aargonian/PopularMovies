@@ -1,9 +1,9 @@
 package com.example.android.popularmovies;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,9 +12,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.data.FileUtils;
+import com.example.android.popularmovies.data.MovieContract.MovieEntry;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
-
 /**
  * Created by Aaron Helton on 1/31/2016
  */
@@ -30,6 +32,27 @@ public class DetailFragment extends Fragment
     @Bind(R.id.posterImage) ImageView poster;
     private boolean viewCreated;
     private boolean displayTitle = false;
+
+    private final String[] projection = {
+            MovieEntry.COLUMN_TITLE,
+            MovieEntry.COLUMN_DESC,
+            MovieEntry.COLUMN_IMG_PATH,
+            MovieEntry.COLUMN_RELEASE,
+            MovieEntry.COLUMN_RUNTIME,
+            MovieEntry.COLUMN_RATING,
+            MovieEntry.COLUMN_VOTE_CNT,
+            MovieEntry.COLUMN_GENRES
+    };
+
+
+    @SuppressWarnings("all") private final int TITLE = 0;
+    @SuppressWarnings("all") private final int OVERVIEW = 1;
+    @SuppressWarnings("all") private final int IMG_PATH = 2;
+    @SuppressWarnings("all") private final int RELEASE = 3;
+    @SuppressWarnings("all") private final int RUNTIME = 4;
+    @SuppressWarnings("all") private final int RATING = 5;
+    @SuppressWarnings("all") private final int VOTE_COUNT = 6;
+    @SuppressWarnings("all") private final int GENRES = 7;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -49,7 +72,7 @@ public class DetailFragment extends Fragment
                     savedInstanceState.getStringArray("MOVIE_GENRES")
             );
         } else  {
-            Integer id = intent.getIntExtra("MOVIE_ID", -1);
+            Long id = intent.getLongExtra("MOVIE_ID", -1);
             if(id != -1)
             {
                 setMovie(id);
@@ -107,23 +130,28 @@ public class DetailFragment extends Fragment
     }
 
 
-    public void setMovie(Integer id)
-    {
-        new AsyncTask<Integer, Void, Movie>() {
-            @Override
-            public Movie doInBackground(Integer... params)
-            {
-                if(params.length < 1)
-                    return null;
-                return Movie.getMovie(params[0], DetailFragment.this.getContext());
-            }
+    public void setMovie(Long id) {
+        Cursor cur = getActivity().getContentResolver().query(MovieEntry.buildMovieUriWithId(id),
+                projection, null, null, null);
+        if (cur == null || !cur.moveToFirst())
+            return;
+        movie = new Movie(
+                cur.getString(TITLE),
+                cur.getString(OVERVIEW),
+                FileUtils.getImage(cur.getString(IMG_PATH)),
+                cur.getString(RELEASE),
+                cur.getInt(RUNTIME),
+                cur.getDouble(RATING),
+                cur.getInt(VOTE_COUNT),
+                parseGenres(cur.getString(GENRES))
+        );
+        cur.close();
+        setMovieInfo(movie);
+    }
 
-            @Override
-            public void onPostExecute(Movie movie)
-            {
-                DetailFragment.this.setMovieInfo(movie);
-            }
-        }.execute(id);
+    private String[] parseGenres(String genres)
+    {
+        return genres.split("_");
     }
 
     private void setMovieInfo(Movie movie)
@@ -133,7 +161,7 @@ public class DetailFragment extends Fragment
             movie.applyPoster(poster);
             overview.setText(movie.getOverview());
             release.setText(movie.getReleaseDate());
-            rating.setText(movie.getRating() + "/10");
+            rating.setText(movie.getRating() + getString(R.string.out_of_ten));
             title.setText(movie.getTitle());
         }
     }

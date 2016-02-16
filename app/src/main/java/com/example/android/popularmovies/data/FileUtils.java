@@ -55,7 +55,7 @@ public final class FileUtils
 
         try {
             FileOutputStream fos = new FileOutputStream(pictureFile);
-            image.compress(format, 90, fos);
+            image.compress(format, 0, fos);
             fos.close();
             return pictureFile.getAbsolutePath();
         } catch (FileNotFoundException e) {
