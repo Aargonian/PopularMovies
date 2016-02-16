@@ -1,5 +1,6 @@
 package com.example.android.popularmovies.data;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
@@ -14,18 +15,23 @@ public class TestDb extends AndroidTestCase {
 
     public static final String LOG_TAG = TestDb.class.getSimpleName();
 
-    // Since we want each test to start with a clean slate
     void deleteTheDatabase() {
         mContext.deleteDatabase(MovieDbHelper.DB_NAME);
     }
 
+    @Override
     public void setUp() {
+        deleteTheDatabase();
+    }
+
+    @Override
+    public void tearDown() {
         deleteTheDatabase();
     }
 
     public void testCreateDb() throws Throwable {
         Log.d(LOG_TAG, "Test: testCreateDb()");
-        final HashSet<String> tableNameHashSet = new HashSet<String>();
+        final HashSet<String> tableNameHashSet = new HashSet<>();
         tableNameHashSet.add(MovieContract.MovieEntry.TABLE_NAME);
 
         mContext.deleteDatabase(MovieDbHelper.DB_NAME);
@@ -45,7 +51,7 @@ public class TestDb extends AndroidTestCase {
         } while( c.moveToNext() );
 
         // if this fails, it means that your database doesn't contain both the location entry
-        // and weather entry tables
+        // and Movie entry tables
         assertTrue("Error: Your database was created without the Movie Table",
                 tableNameHashSet.isEmpty());
 
@@ -57,7 +63,7 @@ public class TestDb extends AndroidTestCase {
                     c.moveToFirst());
 
         // Build a HashSet of all of the column names we want to look for
-        final HashSet<String> movieColumnHashSet = new HashSet<String>();
+        final HashSet<String> movieColumnHashSet = new HashSet<>();
         movieColumnHashSet.add(MovieContract.MovieEntry._ID);
         movieColumnHashSet.add(MovieContract.MovieEntry.COLUMN_TMDB_ID);
         movieColumnHashSet.add(MovieContract.MovieEntry.COLUMN_TITLE);
@@ -66,6 +72,7 @@ public class TestDb extends AndroidTestCase {
         movieColumnHashSet.add(MovieContract.MovieEntry.COLUMN_RELEASE);
         movieColumnHashSet.add(MovieContract.MovieEntry.COLUMN_RUNTIME);
         movieColumnHashSet.add(MovieContract.MovieEntry.COLUMN_RATING);
+        movieColumnHashSet.add(MovieContract.MovieEntry.COLUMN_FAVORITE);
         movieColumnHashSet.add(MovieContract.MovieEntry.COLUMN_VOTE_CNT);
         movieColumnHashSet.add(MovieContract.MovieEntry.COLUMN_GENRES);
 
@@ -82,8 +89,28 @@ public class TestDb extends AndroidTestCase {
         db.close();
     }
 
-    //TODO: Add Test for Movie Table
     //TODO: Add Test for Popular Table
     //TODO: Add Test for Rating Table
     //TODO: Add Test for Favorites Table
+    public void testMovieTable() {
+        Log.d(LOG_TAG, "TEST: TestDb.testMovieTable()");
+        MovieDbHelper dbHelper = new MovieDbHelper(mContext);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String filePath = TestUtilities.storeTestImage(mContext);
+        ContentValues testValues = TestUtilities.createFightClubMovieValues(filePath);
+        assertTrue(db.insert(MovieContract.MovieEntry.TABLE_NAME, null, testValues) != -1);
+        Cursor cursor = db.query(MovieContract.MovieEntry.TABLE_NAME,
+                                 null, null, null, null, null, null);
+        assertTrue("Error: No Movies Returned From Query!", cursor.moveToFirst());
+        TestUtilities.validateCurrentRecord("Error: Movie Not Validated!", cursor, testValues);
+
+        //Test bitmap
+        String f =cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMG_PATH));
+        assertTrue(f.equals(filePath));
+        assertTrue(TestUtilities.getTestImage(mContext).sameAs(FileUtils.getImage(f)));
+
+        assertFalse( "Error: More than one record!", cursor.moveToNext());
+        cursor.close();
+        db.close();
+    }
 }

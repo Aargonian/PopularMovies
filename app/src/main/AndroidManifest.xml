@@ -3,7 +3,6 @@
     package="com.example.android.popularmovies">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -31,6 +30,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.android.popularmovies.MainActivity"/>
         </activity>
+        <provider
+            android:authorities="com.example.android.popularmovies"
+            android:name=".data.MovieProvider"/>
     </application>
 
 </manifest>

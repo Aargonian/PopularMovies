@@ -29,15 +29,22 @@ public class MovieContract  {
         public static final String COLUMN_TMDB_ID = "tmdb_id";
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_DESC = "overview";
+        public static final String COLUMN_POPULARITY = "popularity";
         public static final String COLUMN_IMG_PATH = "img_path";
+        public static final String COLUMN_FAVORITE = "favorite";
         public static final String COLUMN_RELEASE = "release_date";
         public static final String COLUMN_RUNTIME = "runtime";
         public static final String COLUMN_VOTE_CNT = "vote_count";
         public static final String COLUMN_RATING = "rating";
         public static final String COLUMN_GENRES = "genres";
 
-        public static final Uri buildMovieUri(long tmdb_id) {
+        public static Uri buildMovieUriWithId(long tmdb_id) {
             return ContentUris.withAppendedId(CONTENT_URI, tmdb_id);
+        }
+
+        public static long getMovieIdFromUri(Uri uri)
+        {
+            return Long.parseLong(uri.getPathSegments().get(uri.getPathSegments().size()-1));
         }
     }
 }
