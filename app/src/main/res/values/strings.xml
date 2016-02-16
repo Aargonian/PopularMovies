@@ -13,6 +13,7 @@
     <string name="pref_sort_rating_value">Rating</string>
     <string name="pref_sort_release_value">Release</string>
     <string name="get_move_button_label">Get More Movies</string>
+    <string name="out_of_ten">/10</string>
     <array name="pref_sort_labels">
         <item name="pref_sort_popularity_label">Popularity</item>
         <item name="pref_sort_rating_label">Rating</item>

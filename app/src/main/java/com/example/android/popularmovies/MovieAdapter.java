@@ -2,16 +2,13 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 
-import com.nytegear.android.view.AsyncImage;
-import com.nytegear.android.view.WebImageView;
+import com.example.android.popularmovies.data.FileUtils;
 
 import java.util.ArrayList;
 
@@ -20,22 +17,21 @@ import java.util.ArrayList;
  */
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
 {
+    private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
     //Struct-like class for inner use
-    public static class MovieReference {
-        public final Integer id;
-        public final String title;
-        public final AsyncImage poster;
+    private static class MovieReference {
+        public final Long id;
+        public final Bitmap poster;
 
-        public MovieReference(Integer id, String title, AsyncImage poster) {
+        public MovieReference(Long id, Bitmap poster) {
             this.id = id;
             this.poster = poster;
-            this.title = title;
         }
     }
 
     public interface MovieItemClickListener
     {
-        void movieClicked(Integer movieID, String title);
+        void movieClicked(Long movieID);
     }
 
     private ArrayList<MovieReference> dataset;
@@ -46,9 +42,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
         dataset = new ArrayList<>();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener, AsyncImage.AsyncImageListener {
-        private String LOG_TAG = ViewHolder.class.getName();
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
+    {
+        private final String LOG_TAG = ViewHolder.class.getName();
+
         public ImageView imageView;
         public ViewHolder(ImageView v)
         {
@@ -58,24 +55,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
         }
 
         @Override
-        public void imageDownloaded(Bitmap bm)
-        {
-            Log.e(LOG_TAG, "IMAGE DOWNLOADED WOOT");
-            imageView.setImageBitmap(bm);
-        }
-
-        @Override
-        public void downloadFailed()
-        {
-            imageView.setImageBitmap(
-                    BitmapFactory.decodeResource(context.getResources(), R.drawable.noimage));
-        }
-
-        @Override
         public void onClick(View v) {
             if(listener != null) {
                 MovieReference reference = dataset.get(this.getLayoutPosition());
-                listener.movieClicked(reference.id, reference.title);
+                listener.movieClicked(reference.id);
             }
         }
     }
@@ -88,7 +71,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     @Override
     public MovieAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
-        WebImageView view = new WebImageView(parent.getContext());
+        ImageView view = new ImageView(parent.getContext());
         view.setAdjustViewBounds(true);
         view.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
         view.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -100,13 +83,14 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     {
         MovieReference movie = dataset.get(position);
         if(movie != null) {
-            movie.poster.setAsyncImageListener(holder);
-            holder.imageView.setImageBitmap(movie.poster.getImage());
+            holder.imageView.setImageBitmap(movie.poster);
         }
     }
 
-    public void addMovie(MovieReference reference)
+    public void addMovie(long movieId, String imagePath)
     {
+        MovieReference reference =
+                new MovieReference(movieId, FileUtils.getImage(imagePath));
         dataset.add(reference);
         notifyItemInserted(dataset.size() - 1);
     }
