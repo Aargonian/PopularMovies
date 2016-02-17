@@ -97,7 +97,6 @@ public class MovieProvider extends ContentProvider
         if(rowsModified > 0)
             //noinspection ConstantConditions
             getContext().getContentResolver().notifyChange(uri, null);
-        db.close();
         return rowsModified;
     }
 
@@ -123,7 +122,6 @@ public class MovieProvider extends ContentProvider
 
         //noinspection ConstantConditions
         getContext().getContentResolver().notifyChange(uri, null);
-        db.close();
         return returnUri;
     }
 
@@ -146,7 +144,6 @@ public class MovieProvider extends ContentProvider
         if(rowsModified > 0)
             //noinspection ConstantConditions
             getContext().getContentResolver().notifyChange(uri, null);
-        db.close();
         return rowsModified;
     }
 
@@ -185,12 +182,9 @@ public class MovieProvider extends ContentProvider
                 }
                 //noinspection ConstantConditions
                 getContext().getContentResolver().notifyChange(uri, null);
-                db.close();
                 return returnCount;
             default:
-                int count = super.bulkInsert(uri, values);
-                db.close();
-                return count;
+                return super.bulkInsert(uri, values);
         }
     }
 

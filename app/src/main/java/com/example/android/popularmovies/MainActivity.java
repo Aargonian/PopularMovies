@@ -3,6 +3,7 @@ package com.example.android.popularmovies;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +17,7 @@ public class MainActivity extends AppCompatActivity
         implements DiscoverFragment.OnMovieSelectedListener
 {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private DetailFragment details;
+    private static final String DETAIL_FRAGMENT_TAG = "DetailFragmentTag";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +36,7 @@ public class MainActivity extends AppCompatActivity
             if(this.findViewById(R.id.detail_container) != null)
             {
                 transaction = fm.beginTransaction();
-                details = new DetailFragment();
-                transaction.add(R.id.detail_container, details);
+                transaction.add(R.id.detail_container, new DetailFragment(), DETAIL_FRAGMENT_TAG);
                 transaction.commit();
             }
         }
@@ -61,26 +61,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMovieSelected(Long movieID)
     {
-        if(findViewById(R.id.detail_container) != null && details == null)
+        Fragment temp = getSupportFragmentManager().findFragmentByTag(DETAIL_FRAGMENT_TAG);
+        if(temp != null)
         {
-            details = new DetailFragment();
-            FragmentManager fm = this.getSupportFragmentManager();
-            FragmentTransaction transaction =fm.beginTransaction();
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            transaction.add(R.id.detail_container, details);
-            transaction.addToBackStack("Replacement");
-            transaction.commit();
-        }
-
-        if(findViewById(R.id.detail_container) != null)
-        {
+            DetailFragment details = (DetailFragment)temp;
             details.setMovie(movieID);
-        }
-        else
-        {
+        } else {
             Intent detailIntent = new Intent(this, DetailActivity.class);
             detailIntent.putExtra("MOVIE_ID", movieID);
-            detailIntent.putExtra("DISPLAY_TITLE", true);
             this.startActivity(detailIntent);
         }
     }

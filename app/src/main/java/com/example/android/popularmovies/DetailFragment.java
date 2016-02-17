@@ -1,11 +1,14 @@
 package com.example.android.popularmovies;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,14 +25,16 @@ import butterknife.ButterKnife;
  */
 public class DetailFragment extends Fragment
 {
+    private static final String LOG_TAG = DetailFragment.class.getSimpleName();
     public DetailFragment() {}
 
-    private Movie movie;
     @Bind(R.id.rating) TextView rating;
     @Bind(R.id.releaseDate) TextView release;
     @Bind(R.id.overview) TextView overview;
     @Bind(R.id.titleView) TextView title;
     @Bind(R.id.posterImage) ImageView poster;
+
+    private Movie movie;
     private boolean viewCreated;
     private boolean displayTitle = false;
 
@@ -55,9 +60,17 @@ public class DetailFragment extends Fragment
     @SuppressWarnings("all") private final int GENRES = 7;
 
     @Override
+    public void onAttach(Context context)
+    {
+        super.onAttach(context);
+        Log.d(LOG_TAG, "ATTACHED TO ACTIVITY");
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        Log.d(LOG_TAG, "DETAIL FRAGMENT BEING CREATED");
         Intent intent = this.getActivity().getIntent();
         if(savedInstanceState != null)
         {
@@ -90,6 +103,7 @@ public class DetailFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "DETAIL FRAGMENT VIEW BEING CREATED");
         View root = inflater.inflate(R.layout.fragment_detail, container, false);
         ButterKnife.bind(this, root);
         if(!displayTitle)
@@ -111,6 +125,27 @@ public class DetailFragment extends Fragment
             setMovieInfo(movie);
         }
         return root;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
+        Log.d(LOG_TAG, "ACTIVITY CREATED");
+    }
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        Log.d(LOG_TAG, "FRAGMENT STARTED");
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        Log.d(LOG_TAG, "FRAGMENT RESUMED");
     }
 
     @Override
@@ -154,6 +189,7 @@ public class DetailFragment extends Fragment
         return genres.split("_");
     }
 
+    @SuppressLint("SetTextI18n")
     private void setMovieInfo(Movie movie)
     {
         this.movie = movie;
