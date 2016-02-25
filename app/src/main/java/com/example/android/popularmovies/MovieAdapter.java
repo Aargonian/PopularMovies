@@ -1,6 +1,6 @@
 package com.example.android.popularmovies;
 
-import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -9,41 +9,31 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 
 import com.example.android.popularmovies.data.FileUtils;
-
-import java.util.ArrayList;
+import com.example.android.popularmovies.data.MovieContract;
 
 /**
  * Created by Aaron Helton on 1/30/2016
  */
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
 {
+    @SuppressWarnings("unused")
     private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
-    //Struct-like class for inner use
-    private static class MovieReference {
-        public final Long id;
-        public final Bitmap poster;
-
-        public MovieReference(Long id, Bitmap poster) {
-            this.id = id;
-            this.poster = poster;
-        }
-    }
 
     public interface MovieItemClickListener
     {
         void movieClicked(Long movieID);
     }
 
-    private ArrayList<MovieReference> dataset;
+    private Cursor dataset;
     private MovieItemClickListener listener;
-    private Context context;
 
     public MovieAdapter() {
-        dataset = new ArrayList<>();
+        dataset = null;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
     {
+        @SuppressWarnings("unused")
         private final String LOG_TAG = ViewHolder.class.getName();
 
         public ImageView imageView;
@@ -57,8 +47,12 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
         @Override
         public void onClick(View v) {
             if(listener != null) {
-                MovieReference reference = dataset.get(this.getLayoutPosition());
-                listener.movieClicked(reference.id);
+                if(dataset != null) {
+                    dataset.moveToPosition(this.getLayoutPosition());
+                    long id = dataset.getLong(
+                            dataset.getColumnIndex(MovieContract.MovieEntry.COLUMN_TMDB_ID));
+                    listener.movieClicked(id);
+                }
             }
         }
     }
@@ -81,28 +75,29 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>
     @Override
     public void onBindViewHolder(ViewHolder holder, int position)
     {
-        MovieReference movie = dataset.get(position);
-        if(movie != null) {
-            holder.imageView.setImageBitmap(movie.poster);
+        if(dataset != null) {
+            dataset.moveToPosition(position);
+            Bitmap poster = FileUtils.getImage(
+                    dataset.getString(
+                            dataset.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMG_PATH)));
+            if (poster != null) {
+                holder.imageView.setImageBitmap(poster);
+            }
         }
-    }
-
-    public void addMovie(long movieId, String imagePath)
-    {
-        MovieReference reference =
-                new MovieReference(movieId, FileUtils.getImage(imagePath));
-        dataset.add(reference);
-        notifyItemInserted(dataset.size() - 1);
     }
 
     @Override
     public int getItemCount() {
-        return dataset.size();
+        if(dataset != null) {
+            return dataset.getCount();
+        } else {
+            return 0;
+        }
     }
 
-    public final void emptyDataset() {
-        int prevSize = dataset.size();
-        dataset.clear();
-        notifyItemRangeRemoved(0, prevSize);
+    public void setDataset(Cursor cursor)
+    {
+        this.dataset = cursor;
+        this.notifyDataSetChanged();
     }
 }

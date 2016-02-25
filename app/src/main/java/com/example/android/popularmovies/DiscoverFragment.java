@@ -2,8 +2,12 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -13,6 +17,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.example.android.popularmovies.data.MovieContract;
+import com.example.android.popularmovies.data.MovieUtil;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
@@ -20,18 +27,17 @@ import butterknife.ButterKnife;
 /**
  * Created by Aaron Helton on 1/30/2016
  */
-public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItemClickListener
+public class DiscoverFragment extends Fragment
+        implements MovieAdapter.MovieItemClickListener, LoaderManager.LoaderCallbacks<Cursor>
 {
-    //Neglecting use of ButterKnife for this fragment, only one findViewById() is used.
     private static final String LOG_TAG = DiscoverFragment.class.getSimpleName();
     private static final Integer PREFERRED_COLUMN_WIDTH = 100;
     private static final Integer MOVIE_LOADER = 0;
+
     private OnMovieSelectedListener mListener;
     private RecyclerView mMoviesGridView;
     private MovieAdapter mAdapter;
-
     private String sort;
-    private boolean loadingMovies;
     private int currentPage;
 
     @Bind(R.id.movieContainer) FrameLayout movieContainer;
@@ -47,6 +53,13 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         mAdapter.setMovieItemClickedListener(this);
         currentPage = 1;
         sort = Utility.getSort(getActivity());
+    }
+
+    @Override
+    public void onActivityCreated(Bundle state)
+    {
+        super.onActivityCreated(state);
+        getLoaderManager().initLoader(MOVIE_LOADER, null, this);
     }
 
     public void onSaveInstanceState(Bundle bundle)
@@ -79,22 +92,6 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
                 }
             }
         };
-        mMoviesGridView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                int visibleItemCount = recyclerView.getLayoutManager().getChildCount();
-                int totalItemCount = recyclerView.getLayoutManager().getItemCount();
-                int pastVisiblesItems =
-                        ((GridLayoutManager) recyclerView.getLayoutManager())
-                                .findFirstVisibleItemPosition();
-
-                if (!loadingMovies) {
-                    if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-                        addMovies();
-                    }
-                }
-            }
-        });
         mMoviesGridView.setLayoutParams(new RecyclerView.LayoutParams(
                 RecyclerView.LayoutParams.MATCH_PARENT,
                 RecyclerView.LayoutParams.MATCH_PARENT));
@@ -105,7 +102,7 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         mMoviesGridView.setLayoutManager(mManager);
         mMoviesGridView.setAdapter(mAdapter);
         movieContainer.addView(mMoviesGridView);
-        addMovies();
+        updateMovies();
         if(savedInstanceState != null)
             mMoviesGridView.setVerticalScrollbarPosition(savedInstanceState.getInt("SCROLL_POS"));
         return root;
@@ -116,9 +113,9 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     {
         super.onResume();
         if(!sort.equals(Utility.getSort(getActivity()))) {
-            mAdapter.emptyDataset();
+            getLoaderManager().restartLoader(MOVIE_LOADER, null, this);
             currentPage = 1;
-            addMovies();
+            updateMovies();
         }
     }
 
@@ -128,28 +125,9 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
         mListener.onMovieSelected(id);
     }
 
-    public void addMovies() {
-        if(currentPage < 11)
-        {
-            loadingMovies = true;
-            DiscoverTask task = new DiscoverTask(this.getActivity()) {
-                @Override
-                public void onProgressUpdate(String... update)
-                {
-                    if(update.length == 2)
-                    {
-                        mAdapter.addMovie(Long.parseLong(update[0]), update[1]);
-                    }
-                }
-                @Override
-                public void onPostExecute(Void result) {
-                    loadingMovies = false;
-                }
-            };
-            Log.d(LOG_TAG, "CURRENT PAGE: " + currentPage);
-            task.execute(currentPage++);
-        }
-
+    public void updateMovies() {
+        DiscoverTask task = new DiscoverTask(this.getActivity());
+        task.execute(currentPage++);
     }
 
     @Override
@@ -167,6 +145,29 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String sort = Utility.getSort(getActivity());
+        if(sort.equalsIgnoreCase(getString(R.string.pref_sort_popularity_value)))
+            sort = MovieContract.MovieEntry.COLUMN_POPULARITY + " DESC";
+        else if (sort.equalsIgnoreCase(getString(R.string.pref_sort_rating_value)))
+            sort = MovieContract.MovieEntry.COLUMN_RATING + " DESC";
+
+        return new CursorLoader(getActivity(), MovieContract.MovieEntry.CONTENT_URI,
+                                MovieUtil.movieProjection, null, null, sort);
+    }
+
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mAdapter.setDataset(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mAdapter.setDataset(null);
     }
 
     public interface OnMovieSelectedListener {
