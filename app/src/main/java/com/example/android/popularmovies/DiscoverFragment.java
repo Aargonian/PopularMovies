@@ -25,6 +25,7 @@ public class DiscoverFragment extends Fragment implements MovieAdapter.MovieItem
     //Neglecting use of ButterKnife for this fragment, only one findViewById() is used.
     private static final String LOG_TAG = DiscoverFragment.class.getSimpleName();
     private static final Integer PREFERRED_COLUMN_WIDTH = 100;
+    private static final Integer MOVIE_LOADER = 0;
     private OnMovieSelectedListener mListener;
     private RecyclerView mMoviesGridView;
     private MovieAdapter mAdapter;

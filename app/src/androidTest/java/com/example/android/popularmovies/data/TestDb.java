@@ -51,8 +51,8 @@ public class TestDb extends AndroidTestCase {
         } while( c.moveToNext() );
 
         // if this fails, it means that your database doesn't contain both the location entry
-        // and Movie entry tables
-        assertTrue("Error: Your database was created without the Movie Table",
+        // and MovieInfo entry tables
+        assertTrue("Error: Your database was created without the MovieInfo Table",
                 tableNameHashSet.isEmpty());
 
         // now, do our tables contain the correct columns?
@@ -102,7 +102,7 @@ public class TestDb extends AndroidTestCase {
         Cursor cursor = db.query(MovieContract.MovieEntry.TABLE_NAME,
                                  null, null, null, null, null, null);
         assertTrue("Error: No Movies Returned From Query!", cursor.moveToFirst());
-        TestUtilities.validateCurrentRecord("Error: Movie Not Validated!", cursor, testValues);
+        TestUtilities.validateCurrentRecord("Error: MovieInfo Not Validated!", cursor, testValues);
 
         //Test bitmap
         String f =cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMG_PATH));

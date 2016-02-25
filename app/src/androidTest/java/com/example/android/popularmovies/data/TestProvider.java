@@ -45,7 +45,7 @@ public class TestProvider extends AndroidTestCase {
             }
             Log.e(LOG_TAG, "SUSPECT FAVORITE? " + cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_FAVORITE)));
         }
-        assertEquals("Error: Movie Records Not Deleted!", 0, cursor.getCount());
+        assertEquals("Error: MovieInfo Records Not Deleted!", 0, cursor.getCount());
         cursor.close();
     }
 
@@ -116,7 +116,7 @@ public class TestProvider extends AndroidTestCase {
         Uri movieUri = mContext.getContentResolver().insert(MovieEntry.CONTENT_URI, values);
         long movieTMDBId = ContentUris.parseId(movieUri);
 
-        Log.d(LOG_TAG, "Movie ID: " + movieTMDBId);
+        Log.d(LOG_TAG, "MovieInfo ID: " + movieTMDBId);
 
         ContentValues updatedValues = new ContentValues(values);
         updatedValues.put(MovieEntry.COLUMN_POPULARITY, 25.3);
@@ -202,7 +202,7 @@ public class TestProvider extends AndroidTestCase {
         for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++) {
             ContentValues MovieValues = new ContentValues();
             MovieValues.put(MovieContract.MovieEntry.COLUMN_TMDB_ID, startID++);
-            MovieValues.put(MovieContract.MovieEntry.COLUMN_TITLE, "Game Grumps: The Movie");
+            MovieValues.put(MovieContract.MovieEntry.COLUMN_TITLE, "Game Grumps: The MovieInfo");
             MovieValues.put(MovieContract.MovieEntry.COLUMN_DESC, "Two men, one game, 10 minutes");
             MovieValues.put(MovieContract.MovieEntry.COLUMN_POPULARITY, 9001);
             MovieValues.put(MovieContract.MovieEntry.COLUMN_IMG_PATH, movie);
