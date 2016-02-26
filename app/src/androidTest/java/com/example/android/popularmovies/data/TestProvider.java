@@ -140,7 +140,7 @@ public class TestProvider extends AndroidTestCase {
 
         Cursor cursor = mContext.getContentResolver().query(
                 MovieEntry.CONTENT_URI,
-                null,   // projection
+                null,   // movieProjection
                 MovieEntry.COLUMN_TMDB_ID + " = " + movieTMDBId,
                 null,   // Values for the "where" clause
                 null    // sort order

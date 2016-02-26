@@ -31,7 +31,8 @@ public final class MovieUtil
     public static final String TMDB_URL_BASE = "http://api.themoviedb.org/3";
     public static final String TMDB_POSTER_URL = "http://image.tmdb.org/t/p/w185";
 
-    private static final String[] projection = {
+    public static final String[] movieProjection = {
+            MovieContract.MovieEntry.COLUMN_TMDB_ID,
             MovieContract.MovieEntry.COLUMN_TITLE,
             MovieContract.MovieEntry.COLUMN_DESC,
             MovieContract.MovieEntry.COLUMN_IMG_PATH,
@@ -44,22 +45,23 @@ public final class MovieUtil
             MovieContract.MovieEntry.COLUMN_FAVORITE
     };
 
-    @SuppressWarnings("all") private static final int TITLE = 0;
-    @SuppressWarnings("all") private static final int OVERVIEW = 1;
-    @SuppressWarnings("all") private static final int IMG_PATH = 2;
-    @SuppressWarnings("all") private static final int RELEASE = 3;
-    @SuppressWarnings("all") private static final int RUNTIME = 4;
-    @SuppressWarnings("all") private static final int RATING = 5;
-    @SuppressWarnings("all") private static final int POPULARITY = 6;
-    @SuppressWarnings("all") private static final int VOTE_COUNT = 7;
-    @SuppressWarnings("all") private static final int GENRES = 8;
-    @SuppressWarnings("all") private static final int FAVORITE = 9;
+    @SuppressWarnings("all") public static final int TMDB_ID = 0;
+    @SuppressWarnings("all") public static final int TITLE = 1;
+    @SuppressWarnings("all") public static final int OVERVIEW = 2;
+    @SuppressWarnings("all") public static final int IMG_PATH = 3;
+    @SuppressWarnings("all") public static final int RELEASE = 4;
+    @SuppressWarnings("all") public static final int RUNTIME = 5;
+    @SuppressWarnings("all") public static final int RATING = 6;
+    @SuppressWarnings("all") public static final int POPULARITY = 7;
+    @SuppressWarnings("all") public static final int VOTE_COUNT = 8;
+    @SuppressWarnings("all") public static final int GENRES = 9;
+    @SuppressWarnings("all") public static final int FAVORITE = 10;
 
     public static MovieInfo getMovie(@NonNull Context context, Long movieID)
     {
         Cursor cursor = context.getContentResolver().query(
                 MovieContract.MovieEntry.CONTENT_URI,
-                projection,
+                movieProjection,
                 MovieContract.MovieEntry.COLUMN_TMDB_ID + " = ?",
                 new String[]{Long.toString(movieID)},
                 null
