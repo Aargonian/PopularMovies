@@ -57,17 +57,7 @@
             <!-- Mock Divider View. 1px to avoid half-pixel sizes on low-dpi screens! -->
             <View
                 android:id="@+id/divider"
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:layout_marginTop="5dp"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:background="@color/dividerColor"
-                android:layout_alignLeft="@+id/overview"
-                android:layout_alignStart="@+id/overview"
-                android:layout_below="@+id/favoriteButton"
-                android:layout_alignRight="@+id/overview"
-                android:layout_alignEnd="@+id/overview" />
+                style="@style/divider" />
             <TextView
                 android:id="@+id/overview"
                 android:layout_width="match_parent"

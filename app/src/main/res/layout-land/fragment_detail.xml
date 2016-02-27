@@ -50,8 +50,8 @@
                 android:layout_height="wrap_content"
                 android:layout_alignLeft="@id/posterImage"
                 android:layout_alignStart="@id/posterImage"
-                android:layout_alignEnd="@id/posterImage"
                 android:layout_alignRight="@id/posterImage"
+                android:layout_alignEnd="@id/posterImage"
                 android:layout_below="@id/posterImage"
                 android:layout_marginBottom="5dp"/>
             <TextView

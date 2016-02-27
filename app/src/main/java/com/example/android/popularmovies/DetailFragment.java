@@ -1,6 +1,7 @@
 package com.example.android.popularmovies;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.data.MovieContract;
 import com.example.android.popularmovies.data.MovieUtil;
 
 import butterknife.Bind;
@@ -21,7 +23,7 @@ import butterknife.ButterKnife;
 /**
  * Created by Aaron Helton on 1/31/2016
  */
-public class DetailFragment extends Fragment
+public class DetailFragment extends Fragment implements View.OnClickListener
 {
     private static final String LOG_TAG = DetailFragment.class.getSimpleName();
     public DetailFragment() {}
@@ -31,6 +33,8 @@ public class DetailFragment extends Fragment
     @Bind(R.id.overview) TextView overview;
     @Bind(R.id.titleView) TextView title;
     @Bind(R.id.posterImage) ImageView poster;
+    @Bind(R.id.star_icon) ImageView favoriteIcon;
+    @Bind(R.id.favoriteButton) View favoriteButton;
 
     private MovieInfo movie;
     private boolean viewCreated;
@@ -96,6 +100,7 @@ public class DetailFragment extends Fragment
                     .build();
             setMovieInfo(movie);
         }
+        favoriteButton.setOnClickListener(this);
         return root;
     }
 
@@ -136,7 +141,6 @@ public class DetailFragment extends Fragment
         }
     }
 
-
     public void setMovie(Long id) {
         setMovieInfo(MovieUtil.getMovie(getActivity(), id));
     }
@@ -151,6 +155,41 @@ public class DetailFragment extends Fragment
             release.setText(movie.getReleaseDate());
             rating.setText(movie.getRating() + getString(R.string.out_of_ten));
             title.setText(movie.getTitle());
+
+            if(MovieUtil.isFavorite(getActivity(), movie.getId())) {
+                favoriteIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(),
+                                                                         R.drawable.star_favorite));
+            } else {
+                favoriteIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(),
+                                                                    R.drawable.star_not_favorite));
+            }
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if(v == favoriteButton) {
+            if(movie.id > 0) {
+                if(MovieUtil.isFavorite(getActivity(), movie.id)) {
+                    setFavorite(movie.id, false);
+                } else {
+                    setFavorite(movie.id, true);
+                }
+            }
+        }
+    }
+
+    private void setFavorite(Long id, boolean favorite)
+    {
+        int favVal = favorite ? 1 : 0;
+        ContentValues vals = new ContentValues();
+        vals.put(MovieContract.MovieEntry.COLUMN_FAVORITE, favVal);
+        getActivity().getContentResolver().update(MovieContract.MovieEntry.CONTENT_URI,
+                                                  vals,
+                                                  MovieContract.MovieEntry.COLUMN_TMDB_ID + " = ?",
+                                                  new String[]{Long.toString(id)});
+        Bitmap favIcon = BitmapFactory.decodeResource(getResources(),
+                favorite ? R.drawable.star_favorite : R.drawable.star_not_favorite);
+        favoriteIcon.setImageBitmap(favIcon);
     }
 }

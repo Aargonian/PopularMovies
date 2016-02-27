@@ -54,12 +54,14 @@ public class DiscoverTask extends AsyncTask<Integer, String, Void>
     private void getMoviesWithNetworkAvailable(int page)
     {
         String SORT = Utility.getSort(mContext);
-        if(SORT.equalsIgnoreCase(mContext.getString(R.string.pref_sort_popularity_value)))
+        if(SORT.equalsIgnoreCase(mContext.getString(R.string.pref_sort_popularity_value))) {
             SORT = "popularity.desc";
-        else if (SORT.equalsIgnoreCase(mContext.getString(R.string.pref_sort_rating_value)))
+        } else if (SORT.equalsIgnoreCase(mContext.getString(R.string.pref_sort_rating_value))) {
             SORT = "vote_average.desc";
-        else
-            SORT = "release_date.desc";
+        } else {
+            getMoviesWithoutNetwork(page); //Favorite sorting. Network not required.
+            return;
+        }
 
         try
         {
@@ -107,23 +109,40 @@ public class DiscoverTask extends AsyncTask<Integer, String, Void>
     }
 
     private void getMoviesWithoutNetwork(int page) {
-        long startRow = page * 25;
-        long endRow = (page + 1) * 25;
+        page-=1;
+        if(page < 0)
+            page = 0;
+        int startRow = page * 20;
+        int endRow = (page + 1) * 20;
 
         String sort = Utility.getSort(mContext);
 
         if (sort.equalsIgnoreCase(mContext.getString(R.string.pref_sort_rating_value))) {
             sort = MovieContract.MovieEntry.COLUMN_RATING + " DESC";
-        } else {
+        } else if (sort.equalsIgnoreCase(mContext.getString(R.string.pref_sort_popularity_value))){
             sort = MovieContract.MovieEntry.COLUMN_POPULARITY + " DESC";
+        } else {
+            sort = null;
         }
 
+        String selection = null;
+        if(sort == null)
+        {
+            //Favorites sort, so change the selection arguments
+            selection = MovieContract.MovieEntry.COLUMN_FAVORITE + " = 1";
+            //A bit arbitrarily, we'll sort favorites by rating
+            sort = MovieContract.MovieEntry.COLUMN_RATING + " DESC";
+        }
+
+        //Grab a cursor with every movie in the database, initially. If doing favorites, it'll only
+        //be the favorites. Other sorts will literally be every movie.\
+        //We grab every movie initially because that allows the Database to sort the data by our
+        //sort. We can then return just the movies we want by filtering by cursor position.
         Cursor cursor = mContext.getContentResolver().query(
                 MovieContract.MovieEntry.CONTENT_URI,
-                new String[]{MovieContract.MovieEntry._ID, MovieContract.MovieEntry.COLUMN_TMDB_ID,
-                             MovieContract.MovieEntry.COLUMN_IMG_PATH},
-                MovieContract.MovieEntry._ID + " >= ? AND " + MovieContract.MovieEntry._ID + " < ?",
-                new String[]{Long.toString(startRow), Long.toString(endRow)},
+                new String[]{MovieContract.MovieEntry.COLUMN_TMDB_ID, MovieContract.MovieEntry.COLUMN_IMG_PATH},
+                selection,
+                null,
                 sort
         );
 
@@ -134,12 +153,17 @@ public class DiscoverTask extends AsyncTask<Integer, String, Void>
             Log.w(LOG_TAG, "No rows returned from cursor!");
             cursor.close();
             return;
+        } else if (cursor.getCount() <= startRow) {
+            Log.w(LOG_TAG, "Requesting Pages Beyond Database Limits!");
+            cursor.close();
+            return;
         }
 
         int idIndex = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TMDB_ID);
         int imgIndex = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMG_PATH);
-        for(int i = 0; i < cursor.getCount(); i++)
+        for(int i = startRow; i < endRow && i < cursor.getCount(); i++)
         {
+            cursor.moveToPosition(i);
             publishProgress(Long.toString(cursor.getLong(idIndex)), cursor.getString(imgIndex));
             cursor.moveToNext();
         }
