@@ -25,86 +25,61 @@
         android:layout_height="match_parent"
         android:background="@color/white"
         android:clipToPadding="false">
-        <LinearLayout
-            android:id="@+id/detailLinear"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <RelativeLayout
-                android:id="@+id/detailRelative"
+        <RelativeLayout
+            android:id="@+id/detailRelative"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <include layout="@layout/detail_text_fields"
+                android:id="@+id/text_fields"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:id="@+id/releaseDate"
-                    android:layout_marginTop="25dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:text="2016-01-29"/>
-                <TextView
-                    android:id="@+id/releaseHeader"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignTop="@id/releaseDate"
-                    android:layout_toLeftOf="@id/releaseDate"
-                    android:textStyle="bold"
-                    android:text="Release Date: "/>
-                <TextView
-                    android:id="@+id/ratingHeader"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/releaseHeader"
-                    android:layout_alignStart="@id/releaseHeader"
-                    android:layout_alignLeft="@id/releaseHeader"
-                    android:textStyle="bold"
-                    android:text="Rating: "/>
-                <TextView
-                    android:id="@+id/rating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/ratingHeader"
-                    android:layout_toRightOf="@id/ratingHeader"
-                    android:layout_alignTop="@id/ratingHeader"
-                    android:text="7.7/10"/>
-                <ImageView
-                    android:id="@+id/posterImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_alignParentTop="true"
-                    android:layout_toLeftOf="@id/releaseHeader"
-                    android:layout_toStartOf="@id/releaseHeader"
-                    android:layout_margin="20dp"
-                    android:scaleType="fitXY"
-                    android:src="@mipmap/ic_launcher" />
-                <View
-                    android:id="@+id/divider"
-                    android:layout_width="match_parent"
-                    android:layout_height="1px"
-                    android:paddingLeft="5dp"
-                    android:paddingRight="5dp"
-                    android:background="@color/dividerColor"
-                    android:layout_alignLeft="@+id/overview"
-                    android:layout_alignStart="@+id/overview"
-                    android:layout_below="@+id/posterImage"
-                    android:layout_alignRight="@+id/overview"
-                    android:layout_alignEnd="@+id/overview" />
-                <TextView
-                    android:id="@+id/overview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/divider"
-                    android:layout_margin="10dp"
-                    android:padding="10dp"
-                    android:elevation="4dp"
-                    android:background="@color/colorPrimary"
-                    android:textColor="@color/white"
-                    android:text="In a land long ago and far far away."/>
-            </RelativeLayout>
-        </LinearLayout>
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp" />
+            <ImageView
+                style="@style/Poster_Image_Details"
+                android:id="@+id/posterImage"
+                android:layout_width="1dp"
+                android:layout_toLeftOf="@id/text_fields"
+                android:layout_toStartOf="@id/text_fields"
+                android:src="@mipmap/ic_launcher" />
+            <include layout="@layout/favorite_button"
+                android:id="@+id/favoriteButton"
+                android:layout_width="1px"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@id/posterImage"
+                android:layout_alignStart="@id/posterImage"
+                android:layout_alignRight="@id/posterImage"
+                android:layout_alignEnd="@id/posterImage"
+                android:layout_below="@id/posterImage"/>
+            <!-- Mock Divider View. 1px to avoid half-pixel sizes on low-dpi screens! -->
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:layout_marginTop="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:background="@color/dividerColor"
+                android:layout_alignLeft="@+id/overview"
+                android:layout_alignStart="@+id/overview"
+                android:layout_below="@+id/favoriteButton"
+                android:layout_alignRight="@+id/overview"
+                android:layout_alignEnd="@+id/overview" />
+            <TextView
+                android:id="@+id/overview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/divider"
+                android:layout_margin="10dp"
+                android:padding="10dp"
+                android:elevation="4dp"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/white"
+                android:text="In a land long ago and far far away."/>
+        </RelativeLayout>
     </ScrollView>
 
 </RelativeLayout>

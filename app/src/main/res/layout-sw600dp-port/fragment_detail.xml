@@ -29,64 +29,46 @@
             android:id="@+id/detailRelative"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/releaseDate"
+            <ImageView
+                style="@style/Poster_Image_Details"
+                android:id="@+id/posterImage"
+                android:layout_width="wrap_content"
+                android:src="@mipmap/ic_launcher" />
+            <include layout="@layout/detail_text_fields"
+                android:id="@+id/text_fields"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@id/releaseHeader"
-                android:layout_toEndOf="@id/releaseHeader"
-                android:layout_alignTop="@id/releaseHeader"
-                />
-            <TextView
-                android:id="@+id/releaseHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/posterImage"
                 android:layout_toRightOf="@id/posterImage"
                 android:layout_toEndOf="@id/posterImage"
-                android:layout_alignTop="@id/posterImage"
-                android:textStyle="bold"
-                android:text="@string/release_header"/>
-            <TextView
-                android:id="@+id/ratingHeader"
-                android:layout_width="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp" />
+            <include layout="@layout/favorite_button"
+                android:id="@+id/favoriteButton"
+                android:layout_width="1px"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/releaseHeader"
-                android:layout_alignStart="@id/releaseHeader"
-                android:layout_alignLeft="@id/releaseHeader"
-                android:textStyle="bold"
-                android:text="@string/rating_header"/>
-            <TextView
-                android:id="@+id/rating"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/ratingHeader"
-                android:layout_toRightOf="@id/ratingHeader"
-                android:layout_alignTop="@id/ratingHeader"/>
-            <ImageView
-                android:id="@+id/posterImage"
-                android:adjustViewBounds="true"
-                android:layout_width="wrap_content"
-                android:layout_height="200dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentLeft="true"
-                android:layout_margin="20dp"
-                android:scaleType="fitXY"
-                android:src="@mipmap/ic_launcher" />
+                android:layout_alignLeft="@id/posterImage"
+                android:layout_alignStart="@id/posterImage"
+                android:layout_alignEnd="@id/posterImage"
+                android:layout_alignRight="@id/posterImage"
+                android:layout_below="@id/posterImage"
+                android:layout_marginBottom="5dp"/>
             <TextView
                 android:id="@+id/overview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:layout_marginLeft="0dp"
+                android:layout_below="@id/text_fields"
                 android:layout_toRightOf="@id/posterImage"
                 android:layout_toEndOf="@id/posterImage"
-                android:layout_below="@id/ratingHeader"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:padding="10dp"
                 android:elevation="4dp"
                 android:background="@color/colorPrimary"
-                android:textColor="@color/white"/>
+                android:textColor="@color/white"
+                android:text="In a land long ago and far far away."/>
         </RelativeLayout>
     </ScrollView>
-
 </RelativeLayout>

@@ -10,7 +10,7 @@ import com.example.android.popularmovies.data.MovieContract.*;
  */
 //TODO: Create Tests for MovieDbHelper
 public class MovieDbHelper extends SQLiteOpenHelper {
-    private static final int DB_VER = 2;
+    private static final int DB_VER = 3;
     static final String DB_NAME = "popular_movies.db";
 
     public MovieDbHelper(Context context) {
@@ -38,10 +38,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        if(oldVersion == 1 && newVersion >= 2) {
-            final String ADD_FAVORITES = "ALTER TABLE " + MovieEntry.TABLE_NAME + " ADD COLUMN "
-                    + MovieEntry.COLUMN_FAVORITE + " INTEGER NOT NULL DEFAULT 0";
-            sqLiteDatabase.execSQL(ADD_FAVORITES);
-        }
+        //No upgrade because no public version of the app has been released
     }
 }

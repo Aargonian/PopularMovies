@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/releaseHeader"
+        style="@style/HeaderText"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:text="Release Date: "/>
+    <TextView
+        android:id="@+id/releaseDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/releaseHeader"
+        android:text="2016-01-29"/>
+    <TextView
+        style="@style/HeaderText"
+        android:id="@+id/ratingHeader"
+        android:layout_below="@id/releaseHeader"
+        android:layout_alignStart="@id/releaseHeader"
+        android:layout_alignLeft="@id/releaseHeader"
+        android:text="Rating: "/>
+    <TextView
+        android:id="@+id/rating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/ratingHeader"
+        android:layout_toRightOf="@id/ratingHeader"
+        android:layout_alignTop="@id/ratingHeader"
+        android:text="7.7/10"/>
+    <TextView
+        style="@style/HeaderText"
+        android:id="@+id/runtimeHeader"
+        android:layout_below="@id/ratingHeader"
+        android:layout_alignStart="@id/ratingHeader"
+        android:layout_alignLeft="@id/ratingHeader"
+        android:text="Runtime: "/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/runtimeHeader"
+        android:layout_toEndOf="@id/runtimeHeader"
+        android:layout_alignTop="@id/runtimeHeader"
+        android:text="123 minutes"/>
+</RelativeLayout>
