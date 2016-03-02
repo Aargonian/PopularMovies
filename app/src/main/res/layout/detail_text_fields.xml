@@ -8,11 +8,11 @@
         android:id="@+id/releaseHeader"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"/>
+        android:layout_alignParentLeft="true"
+        android:text="@string/release_header"/>
     <TextView
+        style="@style/DetailText"
         android:id="@+id/releaseDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_toRightOf="@id/releaseHeader"
         android:layout_toEndOf="@id/releaseHeader"/>
     <TextView
@@ -20,11 +20,11 @@
         android:id="@+id/ratingHeader"
         android:layout_below="@id/releaseHeader"
         android:layout_alignStart="@id/releaseHeader"
-        android:layout_alignLeft="@id/releaseHeader"/>
+        android:layout_alignLeft="@id/releaseHeader"
+        android:text="@string/rating_header"/>
     <TextView
+        style="@style/DetailText"
         android:id="@+id/rating"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_toEndOf="@id/ratingHeader"
         android:layout_toRightOf="@id/ratingHeader"
         android:layout_alignTop="@id/ratingHeader"/>
@@ -33,11 +33,11 @@
         android:id="@+id/runtimeHeader"
         android:layout_below="@id/ratingHeader"
         android:layout_alignStart="@id/ratingHeader"
-        android:layout_alignLeft="@id/ratingHeader"/>
+        android:layout_alignLeft="@id/ratingHeader"
+        android:text="@string/runtime_header"/>
     <TextView
+        style="@style/DetailText"
         android:id="@+id/runtime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_toRightOf="@id/runtimeHeader"
         android:layout_toEndOf="@id/runtimeHeader"
         android:layout_alignTop="@id/runtimeHeader"/>

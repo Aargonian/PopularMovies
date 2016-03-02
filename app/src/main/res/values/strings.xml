@@ -10,6 +10,7 @@
     <string name="pref_sort_default">Popularity</string>
     <string name="release_header">Release Date:</string>
     <string name="rating_header">Rating:</string>
+    <string name="runtime_header">Runtime:</string>
     <string name="pref_sort_popularity_value">Popularity</string>
     <string name="pref_sort_rating_value">Rating</string>
     <string name="pref_sort_favorite_value">Favorites</string>

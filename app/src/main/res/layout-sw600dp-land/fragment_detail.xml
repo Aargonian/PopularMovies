@@ -37,7 +37,7 @@
                     style="@style/Poster_Image_Details"
                     android:id="@+id/posterImage"
                     android:layout_width="1dp"
-                    android:layout_height="300dp"
+                    android:layout_height="200dp"
                     android:layout_toLeftOf="@id/text_fields"
                     android:layout_toStartOf="@id/text_fields"
                     android:src="@mipmap/ic_launcher" />
@@ -77,8 +77,9 @@
             </RelativeLayout>
             <LinearLayout
                 android:id="@+id/trailerList"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:orientation="vertical" />
             <LinearLayout
                 android:id="@+id/reviewList"

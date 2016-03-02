@@ -203,6 +203,7 @@ public class DetailFragment extends Fragment implements View.OnClickListener
             reviews.removeAllViews();
             if(movie.getReviews() != null && movie.getReviews().length > 0) {
                 reviewHeader.setVisibility(View.VISIBLE);
+                reviews.addView(reviewHeader); //Because it clears everytime we change movies
                 for(int i = 0; i < movie.getReviews().length; i++) {
                     TextView view =
                             (TextView)getLayoutInflater(null).inflate(R.layout.review_layout, null);
@@ -216,7 +217,6 @@ public class DetailFragment extends Fragment implements View.OnClickListener
                             TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
                     params.setMargins(0, px, 0, px);
                     divider.setLayoutParams(params);
-                    divider.setBackgroundColor(getResources().getColor(R.color.dividerColor));
                     reviews.addView(divider);
                 }
             }
@@ -227,6 +227,7 @@ public class DetailFragment extends Fragment implements View.OnClickListener
         if(shareActionProvider == null)
             return;
         Intent shareTrailerIntent = new Intent(Intent.ACTION_SEND);
+        //noinspection deprecation
         shareTrailerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         shareTrailerIntent.setType("text/plain");
         shareTrailerIntent.putExtra(Intent.EXTRA_TEXT, trailer);
