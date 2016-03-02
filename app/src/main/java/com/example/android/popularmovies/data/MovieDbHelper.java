@@ -31,13 +31,29 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_FAVORITE + " INTEGER NOT NULL DEFAULT 0," +
                 MovieEntry.COLUMN_VOTE_CNT + " INTEGER NOT NULL," +
                 MovieEntry.COLUMN_RATING + " REAL NOT NULL," +
-                MovieEntry.COLUMN_GENRES + " TEXT NOT NULL" +
+                MovieEntry.COLUMN_GENRES + " TEXT NOT NULL," +
+                MovieEntry.COLUMN_REVIEWS + " TEXT," +
+                MovieEntry.COLUMN_TRAILERS + " TEXT" +
                 " );";
         sqLiteDatabase.execSQL(SQL_CREATE_MOVIES_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        //No upgrade because no public version of the app has been released
+        //No upgrade because no public version of the app has been released, and no updated db
+        if(oldVersion < 2) {
+            final String ADD_FAVORITES = "ALTER TABLE " + MovieEntry.TABLE_NAME + " ADD COLUMN " +
+                    MovieEntry.COLUMN_FAVORITE + " INT NOT NULL DEFAULT 0";
+            sqLiteDatabase.execSQL(ADD_FAVORITES);
+        }
+        if(oldVersion < 3) {
+            final String ADD_REVIEWS = "ALTER TABLE " + MovieEntry.TABLE_NAME + " ADD COLUMN " +
+                    MovieEntry.COLUMN_REVIEWS + " TEXT";
+            sqLiteDatabase.execSQL(ADD_REVIEWS);
+
+            final String ADD_TRAILERS = "ATLER TABLE " + MovieEntry.TABLE_NAME + " ADD COLUMN " +
+                    MovieEntry.COLUMN_TRAILERS + " TEXT";
+            sqLiteDatabase.execSQL(ADD_TRAILERS);
+        }
     }
 }

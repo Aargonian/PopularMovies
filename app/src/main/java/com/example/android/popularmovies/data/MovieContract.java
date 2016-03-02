@@ -37,6 +37,8 @@ public class MovieContract  {
         public static final String COLUMN_VOTE_CNT = "vote_count";
         public static final String COLUMN_RATING = "rating";
         public static final String COLUMN_GENRES = "genres";
+        public static final String COLUMN_TRAILERS = "trailers";
+        public static final String COLUMN_REVIEWS = "reviews";
 
         public static Uri buildMovieUriWithId(long tmdb_id) {
             return ContentUris.withAppendedId(CONTENT_URI, tmdb_id);

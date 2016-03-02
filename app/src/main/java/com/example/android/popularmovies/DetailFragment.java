@@ -1,18 +1,25 @@
 package com.example.android.popularmovies;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.data.MovieContract;
@@ -26,23 +33,29 @@ import butterknife.ButterKnife;
 public class DetailFragment extends Fragment implements View.OnClickListener
 {
     private static final String LOG_TAG = DetailFragment.class.getSimpleName();
-    public DetailFragment() {}
+    public DetailFragment() {
+        setHasOptionsMenu(true);
+    }
 
     @Bind(R.id.rating) TextView rating;
     @Bind(R.id.releaseDate) TextView release;
+    @Bind(R.id.runtime) TextView runtime;
     @Bind(R.id.overview) TextView overview;
     @Bind(R.id.titleView) TextView title;
     @Bind(R.id.posterImage) ImageView poster;
     @Bind(R.id.star_icon) ImageView favoriteIcon;
     @Bind(R.id.favoriteButton) View favoriteButton;
+    @Bind(R.id.reviewHeader) TextView reviewHeader;
+    @Bind(R.id.reviewList) LinearLayout reviews;
+    @Bind(R.id.trailerList) LinearLayout trailerList;
 
+    private ShareActionProvider shareActionProvider;
     private MovieInfo movie;
     private boolean viewCreated;
     private boolean displayTitle = false;
 
     @Override
-    public void onAttach(Context context)
-    {
+    public void onAttach(Context context) {
         super.onAttach(context);
         Log.d(LOG_TAG, "ATTACHED TO ACTIVITY");
     }
@@ -74,10 +87,19 @@ public class DetailFragment extends Fragment implements View.OnClickListener
 
         //Check for MovieID here because, if it returns -1, the fragment was not called in a single
         //activity, and is likely being displayed along another fragment
-        if(intent.getIntExtra("MOVIE_ID", -1) == -1)
+        if(intent.getLongExtra("MOVIE_ID", -1) == -1)
         {
             displayTitle = true;
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    {
+        inflater.inflate(R.menu.detail_fragment, menu);
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+        shareActionProvider =
+                (ShareActionProvider)MenuItemCompat.getActionProvider(menuItem);
     }
 
     @Override
@@ -145,7 +167,7 @@ public class DetailFragment extends Fragment implements View.OnClickListener
         setMovieInfo(MovieUtil.getMovie(getActivity(), id));
     }
 
-    @SuppressLint("SetTextI18n")
+
     private void setMovieInfo(MovieInfo movie)
     {
         this.movie = movie;
@@ -154,6 +176,7 @@ public class DetailFragment extends Fragment implements View.OnClickListener
             overview.setText(movie.getOverview());
             release.setText(movie.getReleaseDate());
             rating.setText(movie.getRating() + getString(R.string.out_of_ten));
+            runtime.setText(movie.getRunTime() + getString(R.string.runtime_unit));
             title.setText(movie.getTitle());
 
             if(MovieUtil.isFavorite(getActivity(), movie.getId())) {
@@ -163,17 +186,61 @@ public class DetailFragment extends Fragment implements View.OnClickListener
                 favoriteIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(),
                                                                     R.drawable.star_not_favorite));
             }
+
+            trailerList.removeAllViews();
+            if(movie.getTrailers() != null && movie.getTrailers().length > 0) {
+                final String[] trailers = movie.getTrailers();
+                for(int i = 0; i < trailers.length; i++) {
+                    View view = getLayoutInflater(null).inflate(R.layout.trailer_layout, null);
+                    TextView trailerText = (TextView)view.findViewById(R.id.trailerText);
+                    trailerText.setText("Trailer " + (i+1));
+                    view.setOnClickListener(new TrailerClickListener(trailers[i]));
+                    trailerList.addView(view);
+                }
+                setShareMovieTrailerIntent(trailers[0]);
+            }
+
+            reviews.removeAllViews();
+            if(movie.getReviews() != null && movie.getReviews().length > 0) {
+                reviewHeader.setVisibility(View.VISIBLE);
+                for(int i = 0; i < movie.getReviews().length; i++) {
+                    TextView view =
+                            (TextView)getLayoutInflater(null).inflate(R.layout.review_layout, null);
+                    view.setText(movie.getReviews()[i]);
+                    reviews.addView(view);
+
+                    View divider = new View(getActivity());
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                    int px = (int) TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
+                    params.setMargins(0, px, 0, px);
+                    divider.setLayoutParams(params);
+                    divider.setBackgroundColor(getResources().getColor(R.color.dividerColor));
+                    reviews.addView(divider);
+                }
+            }
         }
+    }
+
+    private void setShareMovieTrailerIntent(String trailer) {
+        if(shareActionProvider == null)
+            return;
+        Intent shareTrailerIntent = new Intent(Intent.ACTION_SEND);
+        shareTrailerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        shareTrailerIntent.setType("text/plain");
+        shareTrailerIntent.putExtra(Intent.EXTRA_TEXT, trailer);
+        shareActionProvider.setShareIntent(shareTrailerIntent);
     }
 
     @Override
     public void onClick(View v) {
         if(v == favoriteButton) {
-            if(movie.id > 0) {
-                if(MovieUtil.isFavorite(getActivity(), movie.id)) {
-                    setFavorite(movie.id, false);
+            if(movie.getId() > 0) {
+                if(MovieUtil.isFavorite(getActivity(), movie.getId())) {
+                    setFavorite(movie.getId(), false);
                 } else {
-                    setFavorite(movie.id, true);
+                    setFavorite(movie.getId(), true);
                 }
             }
         }
@@ -191,5 +258,20 @@ public class DetailFragment extends Fragment implements View.OnClickListener
         Bitmap favIcon = BitmapFactory.decodeResource(getResources(),
                 favorite ? R.drawable.star_favorite : R.drawable.star_not_favorite);
         favoriteIcon.setImageBitmap(favIcon);
+    }
+
+    private class TrailerClickListener implements View.OnClickListener {
+        private final String trailer;
+
+        public TrailerClickListener(String trailer) {
+            this.trailer = trailer;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Log.d(LOG_TAG, "SHOWING TRAILER: " + trailer);
+            Intent trailerIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailer));
+            startActivity(trailerIntent);
+        }
     }
 }

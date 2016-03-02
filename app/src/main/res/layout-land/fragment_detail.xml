@@ -25,50 +25,78 @@
         android:layout_height="match_parent"
         android:background="@color/white"
         android:clipToPadding="false">
-        <RelativeLayout
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <RelativeLayout
             android:id="@+id/detailRelative"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-            <ImageView
-                style="@style/Poster_Image_Details"
-                android:id="@+id/posterImage"
-                android:layout_width="wrap_content"
-                android:src="@mipmap/ic_launcher" />
-            <include layout="@layout/detail_text_fields"
-                android:id="@+id/text_fields"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignTop="@id/posterImage"
-                android:layout_toRightOf="@id/posterImage"
-                android:layout_toEndOf="@id/posterImage"
-                android:layout_marginTop="20dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp" />
-            <include layout="@layout/favorite_button"
-                android:id="@+id/favoriteButton"
-                android:layout_width="1px"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@id/posterImage"
-                android:layout_alignStart="@id/posterImage"
-                android:layout_alignRight="@id/posterImage"
-                android:layout_alignEnd="@id/posterImage"
-                android:layout_below="@id/posterImage"
-                android:layout_marginBottom="5dp"/>
-            <TextView
-                android:id="@+id/overview"
+                <ImageView
+                    style="@style/Poster_Image_Details"
+                    android:id="@+id/posterImage"
+                    android:layout_width="wrap_content"
+                    android:src="@mipmap/ic_launcher" />
+                <include layout="@layout/detail_text_fields"
+                    android:id="@+id/text_fields"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@id/posterImage"
+                    android:layout_toRightOf="@id/posterImage"
+                    android:layout_toEndOf="@id/posterImage"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp" />
+                <include layout="@layout/favorite_button"
+                    android:id="@+id/favoriteButton"
+                    android:layout_width="1px"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@id/posterImage"
+                    android:layout_alignStart="@id/posterImage"
+                    android:layout_alignRight="@id/posterImage"
+                    android:layout_alignEnd="@id/posterImage"
+                    android:layout_below="@id/posterImage"
+                    android:layout_marginBottom="5dp"/>
+                <TextView
+                    android:id="@+id/overview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/text_fields"
+                    android:layout_toRightOf="@id/posterImage"
+                    android:layout_toEndOf="@id/posterImage"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:padding="10dp"
+                    android:elevation="4dp"
+                    android:background="@color/colorPrimary"
+                    android:textColor="@color/white"
+                    android:text="In a land long ago and far far away."/>
+            </RelativeLayout>
+            <LinearLayout
+                android:id="@+id/trailerList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/text_fields"
-                android:layout_toRightOf="@id/posterImage"
-                android:layout_toEndOf="@id/posterImage"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp"
-                android:padding="10dp"
-                android:elevation="4dp"
-                android:background="@color/colorPrimary"
-                android:textColor="@color/white"
-                android:text="In a land long ago and far far away."/>
-        </RelativeLayout>
+                android:orientation="vertical" />
+            <LinearLayout
+                android:id="@+id/reviewList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@color/dividerColor"
+                android:dividerHeight="5dp"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/reviewHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:textAlignment="center"
+                    android:textSize="36sp"
+                    android:textColor="@color/primaryText"
+                    android:text="@string/reviews_header"
+                    android:visibility="gone"/>
+            </LinearLayout>
+        </LinearLayout>
     </ScrollView>
 </RelativeLayout>

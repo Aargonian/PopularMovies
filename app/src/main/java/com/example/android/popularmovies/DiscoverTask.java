@@ -93,7 +93,9 @@ public class DiscoverTask extends AsyncTask<Integer, String, Void>
             for(int i = 0; i < results.length(); i++)
             {
                 Long id = results.getJSONObject(i).getLong("id");
+
                 //Use the 'FromNet' version of GetMovie so we can update any relevant info as well.
+                //It'll; also grab the reviews and video links for us.
                 MovieInfo movie = MovieUtil.getMovieFromNet(mContext, id);
                 if(movie == null) {
                     Log.w(LOG_TAG, "NULL MOVIE: " + id);

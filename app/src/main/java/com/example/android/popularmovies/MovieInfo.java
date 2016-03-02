@@ -12,21 +12,21 @@ public class MovieInfo implements Comparable<MovieInfo>
     @SuppressWarnings("unused")
     private static final String LOG_TAG = MovieInfo.class.getSimpleName();
 
-    public long id;
-    public String title;
-    public String overview;
-    public Bitmap poster;
-    public String releaseDate;
-    public String posterPath;
-    public int runTime;
-    public int vote_count;
-    public double rating;
-    public double popularity;
-    public String[] genres;
+    private long id;
+    private String title;
+    private String overview;
+    private Bitmap poster;
+    private String releaseDate;
+    private String posterPath;
+    private int runTime;
+    private int vote_count;
+    private double rating;
+    private double popularity;
+    private String[] genres;
+    private String[] trailers;
+    private String[] reviews;
 
-    private MovieInfo()
-    {
-    }
+    private MovieInfo(){}
 
     public static MovieBuilder buildMovie() {
         return new MovieBuilder();
@@ -47,7 +47,7 @@ public class MovieInfo implements Comparable<MovieInfo>
         }
 
         public boolean isValid() {
-            return movie.id >= 0 && !(movie.title == null || movie.title.isEmpty());
+            return movie.getId() >= 0 && !(movie.getTitle() == null || movie.getTitle().isEmpty());
         }
 
         public MovieBuilder withId(Long id) {
@@ -110,21 +110,33 @@ public class MovieInfo implements Comparable<MovieInfo>
             movie.posterPath = path;
             return this;
         }
+
+        public MovieBuilder withTrailers(String[] trailerList)
+        {
+            movie.trailers = trailerList;
+            return this;
+        }
+
+        public MovieBuilder withReviews(String[] reviews)
+        {
+            movie.reviews = reviews;
+            return this;
+        }
     }
 
     @Override
     public int compareTo(@NonNull MovieInfo other)
     {
-        if(this.rating < other.rating) {
+        if(this.getRating() < other.getRating()) {
             return 1;
         }
-        else if(this.rating > other.rating) {
+        else if(this.getRating() > other.getRating()) {
             return -1;
         }
         else {
-            if(this.vote_count < other.vote_count) {
+            if(this.getVoteCount() < other.getVoteCount()) {
                 return 1;
-            } else if (this.vote_count > other.vote_count) {
+            } else if (this.getVoteCount() > other.getVoteCount()) {
                 return -1;
             } else {
                 return 0;
@@ -134,7 +146,7 @@ public class MovieInfo implements Comparable<MovieInfo>
 
     public void applyPoster(ImageView view)
     {
-        view.setImageBitmap(poster);
+        view.setImageBitmap(getPoster());
     }
 
     public Long getId() { return id; }
@@ -172,6 +184,10 @@ public class MovieInfo implements Comparable<MovieInfo>
     public String[] getGenres() {
         return genres;
     }
+
+    public String[] getReviews() { return reviews; }
+
+    public String[] getTrailers() { return trailers; }
 
     public static class MalformedMovieException extends RuntimeException {
         public MalformedMovieException(String message) {

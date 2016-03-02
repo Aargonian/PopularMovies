@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -41,7 +42,9 @@ public final class MovieUtil
             MovieContract.MovieEntry.COLUMN_POPULARITY,
             MovieContract.MovieEntry.COLUMN_VOTE_CNT,
             MovieContract.MovieEntry.COLUMN_GENRES,
-            MovieContract.MovieEntry.COLUMN_FAVORITE
+            MovieContract.MovieEntry.COLUMN_FAVORITE,
+            MovieContract.MovieEntry.COLUMN_TRAILERS,
+            MovieContract.MovieEntry.COLUMN_REVIEWS
     };
 
     @SuppressWarnings("all") private static final int TITLE = 0;
@@ -54,6 +57,8 @@ public final class MovieUtil
     @SuppressWarnings("all") private static final int VOTE_COUNT = 7;
     @SuppressWarnings("all") private static final int GENRES = 8;
     @SuppressWarnings("all") private static final int FAVORITE = 9;
+    @SuppressWarnings("all") private static final int TRAILERS = 10;
+    @SuppressWarnings("all") private static final int REVIEWS = 11;
 
     public static MovieInfo getMovie(@NonNull Context context, Long movieID)
     {
@@ -90,7 +95,9 @@ public final class MovieUtil
                     .withPopularity(cursor.getDouble(POPULARITY))
                     .withRating(cursor.getDouble(RATING))
                     .withVoteCount(cursor.getInt(VOTE_COUNT))
-                    .withGenres(parseGenres(cursor.getString(GENRES))).build();
+                    .withGenres(convertStringToArray(cursor.getString(GENRES)))
+                    .withReviews(convertStringToArray(cursor.getString(REVIEWS)))
+                    .withTrailers(convertStringToArray(cursor.getString(TRAILERS))).build();
             cursor.close();
             return movie;
         }
@@ -131,14 +138,20 @@ public final class MovieUtil
      */
     public static MovieInfo getMovieFromNet(Context context, Long id)
     {
-        String url = TMDB_URL_BASE+"/movie/"+id +"?api_key="+API_KEY;
-        String movieJSON = NetworkUtil.getURL(url);
-        if(movieJSON == null || movieJSON.isEmpty()) {
-            Log.w(LOG_TAG, "Unable to fetch movie from network! TMDB ID: " + id);
-            return null;
-        }
+        Uri movieURI = Uri.parse(TMDB_URL_BASE).buildUpon()
+                .appendPath("movie")
+                .appendPath(Long.toString(id))
+                .appendQueryParameter("api_key", API_KEY)
+                .appendQueryParameter("append_to_response", "reviews,videos").build();
+        String movieJSON = null;
         try
         {
+            movieJSON = NetworkUtil.getURL(movieURI.toString());
+            if(movieJSON == null || movieJSON.isEmpty()) {
+                Log.w(LOG_TAG, "Unable to fetch movie from network! TMDB ID: " + id);
+                return null;
+            }
+
             JSONObject movieObject = new JSONObject(movieJSON);
             JSONArray genreList = movieObject.getJSONArray("genres");
             String[] genres = new String[genreList.length()];
@@ -148,6 +161,8 @@ public final class MovieUtil
             String overview = movieObject.getString("overview");
             String posterPath = movieObject.getString("poster_path");
             String releaseDate = movieObject.getString("release_date");
+
+            System.out.println("MOVIE JSON: " + movieJSON);
 
             //Individual Tries for Malformed Movies
             int runTime = 0;
@@ -176,6 +191,41 @@ public final class MovieUtil
                 Log.e(LOG_TAG, "Unable To Get MovieInfo Poster: " + ex.getMessage(), ex);
             }
 
+            //GetReviews
+            String[] reviews = null;
+            JSONObject reviewObject = movieObject.getJSONObject("reviews");
+            try {
+                JSONArray reviewList = reviewObject.getJSONArray("results");
+                if (reviewList.length() > 0) {
+                    reviews = new String[reviewList.length() > 3 ? 3 : reviewList.length()];
+                    for (int i = 0; i < reviewList.length() && i < 3; i++) {
+                        reviews[i] = reviewList.getJSONObject(i).getString("content");
+                    }
+                }
+            } catch (JSONException ex) {
+                Log.e(LOG_TAG, "Error Retrieving Reviews: " + ex.getMessage(), ex);
+                Log.e(LOG_TAG, "REVIEW JSON: " + reviewObject.toString());
+            }
+
+            //Get Trailers
+            final String YOUTUBE_BASE_VIDEO_URL = "https://www.youtube.com/watch?v=";
+            String[] trailers = null;
+            JSONObject trailerObject = movieObject.getJSONObject("videos");
+            try {
+                JSONArray trailerList = trailerObject.getJSONArray("results");
+                if (trailerList.length() > 0) {
+                    trailers = new String[trailerList.length() > 3 ? 3 : trailerList.length()];
+                    for (int i = 0; i < trailerList.length() && i < 3; i++) {
+                        trailers[i] =
+                                YOUTUBE_BASE_VIDEO_URL + trailerList.getJSONObject(i).getString("key");
+                    }
+                }
+            } catch (JSONException ex) {
+                Log.e(LOG_TAG, "ERROR GETTING TRAILERS: " + ex.getMessage(), ex);
+                Log.e(LOG_TAG, "TRAILER JSON: " + trailerObject.toString());
+            }
+
+
             MovieInfo info = MovieInfo.buildMovie().withId(id)
                                          .withTitle(title)
                                          .withGenres(genres)
@@ -186,7 +236,9 @@ public final class MovieUtil
                                          .withRating(vote)
                                          .withVoteCount(votes)
                                          .withPopularity(popularity)
-                                         .withPosterPath(imgPath).build();
+                                         .withPosterPath(imgPath)
+                                         .withReviews(reviews)
+                                         .withTrailers(trailers).build();
             upsertMovie(context, info); //For caching purposes
             return info;
         } catch (JSONException ex) {
@@ -196,23 +248,25 @@ public final class MovieUtil
         }
     }
 
-    private static final Character GENRE_DELIMITER = '_';
+    public static final String STR_SEPARATOR = "__,__";
 
-    private static String[] parseGenres(String genres)
-    {
-        return genres.split(Character.toString(GENRE_DELIMITER));
-    }
-
-    private static String encodeGenres(String[] genres)
-    {
+    public static String convertArrayToString(String[] array){
+        if(array == null)
+            return null;
         StringBuilder builder = new StringBuilder();
-        for(int i = 0; i < genres.length; i++)
-        {
-            builder.append(genres[i]);
-            if(i != genres.length-1)
-                builder.append(GENRE_DELIMITER);
+        for (int i = 0;i<array.length; i++) {
+            builder.append(array[i]);
+            if(i<array.length-1){
+                builder.append(STR_SEPARATOR);
+            }
         }
         return builder.toString();
+    }
+
+    public static String[] convertStringToArray(String str){
+        if(str == null)
+            return null;
+        return str.split(STR_SEPARATOR);
     }
 
     private static Bitmap getPoster(Context context, String posterPath) throws IOException
@@ -243,7 +297,11 @@ public final class MovieUtil
         values.put(MovieContract.MovieEntry.COLUMN_RUNTIME, movie.getRunTime());
         values.put(MovieContract.MovieEntry.COLUMN_TITLE, movie.getTitle());
         values.put(MovieContract.MovieEntry.COLUMN_VOTE_CNT, movie.getVoteCount());
-        values.put(MovieContract.MovieEntry.COLUMN_GENRES, encodeGenres(movie.getGenres()));
+        values.put(MovieContract.MovieEntry.COLUMN_GENRES, convertArrayToString(movie.getGenres()));
+        values.put(MovieContract.MovieEntry.COLUMN_REVIEWS,
+                convertArrayToString(movie.getReviews()));
+        values.put(MovieContract.MovieEntry.COLUMN_TRAILERS,
+                convertArrayToString(movie.getTrailers()));
 
         if(cursor.getCount() == 0 || !cursor.moveToFirst()) {
             storeMovie(context, values);
