@@ -51,6 +51,7 @@ public class DetailFragment extends Fragment implements View.OnClickListener
 
     private ShareActionProvider shareActionProvider;
     private MovieInfo movie;
+    private Intent shareActionIntent;
     private boolean viewCreated;
     private boolean displayTitle = false;
 
@@ -96,10 +97,16 @@ public class DetailFragment extends Fragment implements View.OnClickListener
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
     {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        Log.d(LOG_TAG, "CREATING OPTION MENU");
         inflater.inflate(R.menu.detail_fragment, menu);
         MenuItem menuItem = menu.findItem(R.id.action_share);
         shareActionProvider =
                 (ShareActionProvider)MenuItemCompat.getActionProvider(menuItem);
+        if(shareActionIntent != null) {
+            shareActionProvider.setShareIntent(shareActionIntent);
+        }
     }
 
     @Override
@@ -197,6 +204,7 @@ public class DetailFragment extends Fragment implements View.OnClickListener
                     view.setOnClickListener(new TrailerClickListener(trailers[i]));
                     trailerList.addView(view);
                 }
+                Log.d(LOG_TAG, "DOING THE THING OF ADDING A TRAILER TO THE SHARE INTENT");
                 setShareMovieTrailerIntent(trailers[0]);
             }
 
@@ -224,14 +232,15 @@ public class DetailFragment extends Fragment implements View.OnClickListener
     }
 
     private void setShareMovieTrailerIntent(String trailer) {
-        if(shareActionProvider == null)
-            return;
         Intent shareTrailerIntent = new Intent(Intent.ACTION_SEND);
         //noinspection deprecation
         shareTrailerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         shareTrailerIntent.setType("text/plain");
         shareTrailerIntent.putExtra(Intent.EXTRA_TEXT, trailer);
-        shareActionProvider.setShareIntent(shareTrailerIntent);
+        if(shareActionProvider != null) {
+            shareActionProvider.setShareIntent(shareTrailerIntent);
+        }
+        shareActionIntent = shareTrailerIntent;
     }
 
     @Override
@@ -270,7 +279,6 @@ public class DetailFragment extends Fragment implements View.OnClickListener
 
         @Override
         public void onClick(View v) {
-            Log.d(LOG_TAG, "SHOWING TRAILER: " + trailer);
             Intent trailerIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailer));
             startActivity(trailerIntent);
         }
